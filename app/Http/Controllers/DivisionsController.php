@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Divisions;
+use App\Models\Division;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -35,7 +35,7 @@ class DivisionsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Divisions $divisions)
+    public function show(Division $division)
     {
         //
     }
@@ -43,7 +43,7 @@ class DivisionsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Divisions $divisions)
+    public function edit(Division $division)
     {
         //
     }
@@ -51,7 +51,7 @@ class DivisionsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Divisions $divisions)
+    public function update(Request $request, Division $division)
     {
         //
     }
@@ -59,7 +59,7 @@ class DivisionsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Divisions $divisions)
+    public function destroy(Division $division)
     {
         //
     }

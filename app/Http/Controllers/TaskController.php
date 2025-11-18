@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tasks;
+use App\Models\Task;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class TasksController extends Controller
+class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -36,7 +36,7 @@ class TasksController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Tasks $tasks)
+    public function show(Task $task)
     {
         //
     }
@@ -44,7 +44,7 @@ class TasksController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Tasks $tasks)
+    public function edit(Task $task)
     {
         //
     }
@@ -52,7 +52,7 @@ class TasksController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Tasks $tasks)
+    public function update(Request $request, Task $task)
     {
         //
     }
@@ -60,7 +60,7 @@ class TasksController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tasks $tasks)
+    public function destroy(Task $task)
     {
         //
     }
