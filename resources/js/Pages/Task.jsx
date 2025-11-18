@@ -1,3 +1,4 @@
+import MainContainer from "@/Components/DivContainer/MainContainer";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
@@ -11,7 +12,6 @@ export default function Task() {
             }
         >
             <Head title="Tasks" />
-
         </AuthenticatedLayout>
     )
 }
