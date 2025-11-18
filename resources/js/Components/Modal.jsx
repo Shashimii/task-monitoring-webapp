@@ -1,65 +1,53 @@
-import {
-    Dialog,
-    DialogPanel,
-    Transition,
-    TransitionChild,
-} from '@headlessui/react';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 
 export default function Modal({
-    children,
-    show = false,
-    maxWidth = '2xl',
-    closeable = true,
-    onClose = () => {},
+    open,
+    setOpen,
+    Icon='a',
+    IconColor='bg-green-500/10 text-green-400',
+    Title='HeaderText',
+    Content='Content',
+    Footer='Footer'
 }) {
-    const close = () => {
-        if (closeable) {
-            onClose();
-        }
-    };
-
-    const maxWidthClass = {
-        sm: 'sm:max-w-sm',
-        md: 'sm:max-w-md',
-        lg: 'sm:max-w-lg',
-        xl: 'sm:max-w-xl',
-        '2xl': 'sm:max-w-2xl',
-    }[maxWidth];
 
     return (
-        <Transition show={show} leave="duration-200">
-            <Dialog
-                as="div"
-                id="modal"
-                className="fixed inset-0 z-50 flex transform items-center overflow-y-auto px-4 py-6 transition-all sm:px-0"
-                onClose={close}
-            >
-                <TransitionChild
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="absolute inset-0 bg-gray-500/75 dark:bg-gray-900/75" />
-                </TransitionChild>
+        <div>
+            <Dialog open={open} onClose={() => setOpen(false)} className="relative z-10">
+                <DialogBackdrop
+                    transition
+                    className="fixed inset-0 bg-gray-900/50 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
+                />
 
-                <TransitionChild
-                    enter="ease-out duration-300"
-                    enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    enterTo="opacity-100 translate-y-0 sm:scale-100"
-                    leave="ease-in duration-200"
-                    leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                    leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                >
-                    <DialogPanel
-                        className={`mb-6 transform overflow-hidden rounded-lg bg-white shadow-xl transition-all sm:mx-auto sm:w-full dark:bg-gray-800 ${maxWidthClass}`}
-                    >
-                        {children}
-                    </DialogPanel>
-                </TransitionChild>
+                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <DialogPanel
+                            transition
+                            className="relative transform overflow-hidden rounded-lg bg-gray-800 text-left shadow-xl outline outline-1 -outline-offset-1 outline-white/10 transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-lg data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
+                        >
+                            <div className="bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                                <div className="sm:flex sm:items-start">
+                                    {Icon && (
+                                        <div className={`mx-auto flex size-12 shrink-0 items-center justify-center rounded-full ${IconColor} sm:mx-0 sm:size-10`}>
+                                            {Icon}
+                                        </div>
+                                    )}
+                                    <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                        <DialogTitle as="h3" className="text-base font-semibold text-white">
+                                            {Title}
+                                        </DialogTitle>
+                                        <div className="mt-2">
+                                            {Content}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-gray-700/25 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                                {Footer}
+                            </div>
+                        </DialogPanel>
+                    </div>
+                </div>
             </Dialog>
-        </Transition>
-    );
+        </div>
+    )
 }
