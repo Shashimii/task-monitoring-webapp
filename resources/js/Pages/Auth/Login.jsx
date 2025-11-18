@@ -50,7 +50,7 @@ export default function Login({ status, canResetPassword }) {
                                 placeholder="Email"
                                 value={data.email}
                                 onChange={(e) => setData("email", e.target.value)}
-                                autocomplete="email"
+                                autocomplete="username"
                                 error={errors.email}
                             />
                             <PrimaryInput
@@ -58,7 +58,6 @@ export default function Login({ status, canResetPassword }) {
                                 placeholder="Password"
                                 value={data.password}
                                 onChange={(e) => setData("password", e.target.value)}
-                                autocomplete="password"
                                 error={errors.password}
                             />
 
