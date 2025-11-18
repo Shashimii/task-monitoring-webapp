@@ -1,4 +1,5 @@
 import MainContainer from "@/Components/DivContainer/MainContainer";
+import PrimaryCard from "@/Components/DivContainer/PrimaryCard";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 
@@ -12,6 +13,12 @@ export default function Task() {
             }
         >
             <Head title="Tasks" />
+            
+            <MainContainer>
+                <PrimaryCard>
+                    
+                </PrimaryCard>
+            </MainContainer>
         </AuthenticatedLayout>
     )
 }
