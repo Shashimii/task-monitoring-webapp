@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\TimelineController;
 use Illuminate\Foundation\Application;
@@ -17,7 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('dashboard', DashboardController::class);
 
     // Tasks
-    Route::resource('task', TasksController::class);
+    Route::resource('task', TaskController::class);
 
     // Timeline
     Route::resource('timeline', TimelineController::class);
