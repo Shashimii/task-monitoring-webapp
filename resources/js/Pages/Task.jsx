@@ -13,6 +13,10 @@ import TableRow from '@/Components/Table/TableRow';
 import TableData from '@/Components/Table/TableData';
 import SelectInput from '@/Components/Form/SelectInput';
 import Datepicker from '@/Components/Form/Datepicker';
+import Badge from '@/Components/Misc/Badge';
+import DateContainer from '@/Components/Misc/DateContainer';
+import StatusContainer from '@/Components/Misc/StatusContainer';
+import DivisionContainer from '@/Components/Misc/DivisionContainer';
 
 
 export default function Task() {
@@ -71,19 +75,33 @@ export default function Task() {
                     Aisha Cruz
                 </TableData>
                 <TableData>
-                    RICTU
+                    <DivisionContainer
+                        bgcolor="bg-cyan-500"
+                    >
+                        RICTU
+                    </DivisionContainer>
                 </TableData>
                 <TableData>
                     Forwarded to RED
                 </TableData>
                 <TableData>
-                    In Progress
+                    <StatusContainer
+                        bgcolor="bg-orange-400"
+                    >
+                        IN PROGRESS
+                    </StatusContainer>
                 </TableData>
                 <TableData>
-                    12/25/2025
+                    <DateContainer>
+                        12/25/2025
+                    </DateContainer>
                 </TableData>
                 <TableData>
-                    High
+                    <Badge
+                        bgcolor="bg-red-600"
+                    >
+                        Highest
+                    </Badge>
                 </TableData>
             </TableRow>
             <TableRow>
@@ -94,19 +112,33 @@ export default function Task() {
                     Aisha Cruz
                 </TableData>
                 <TableData>
-                    RICTU
+                    <DivisionContainer
+                        bgcolor="bg-gray-500"
+                    >
+                        FD
+                    </DivisionContainer>
                 </TableData>
                 <TableData>
                     Forwarded to RED
                 </TableData>
                 <TableData>
-                    In Progress
+                    <StatusContainer
+                        bgcolor="bg-green-400"
+                    >
+                        DONE
+                    </StatusContainer>
                 </TableData>
                 <TableData>
-                    12/25/2025
+                    <DateContainer>
+                        12/25/2025
+                    </DateContainer>
                 </TableData>
                 <TableData>
-                    High
+                    <Badge
+                        bgcolor="bg-green-600"
+                    >
+                        Low
+                    </Badge>
                 </TableData>
             </TableRow>
             <TableRow>
@@ -117,78 +149,100 @@ export default function Task() {
                     Aisha Cruz
                 </TableData>
                 <TableData>
-                    RICTU
+                    <DivisionContainer
+                        bgcolor="bg-pink-500"
+                    >
+                        PMD
+                    </DivisionContainer>
                 </TableData>
                 <TableData>
                     Forwarded to RED
                 </TableData>
                 <TableData>
-                    In Progress
+                    <StatusContainer
+                        bgcolor="bg-gray-400"
+                    >
+                        NOT STARTED
+                    </StatusContainer>
                 </TableData>
                 <TableData>
-                    12/25/2025
+                    <DateContainer>
+                        12/25/2025
+                    </DateContainer>
                 </TableData>
                 <TableData>
-                    High
+                    <Badge
+                        bgcolor="bg-orange-600"
+                    >
+                        Medium
+                    </Badge>
                 </TableData>
             </TableRow>
         </>
     )
 
     // Add Modal
+    const ADD_MODAL_ICON_COLOR = "bg-green-200 text-green-700 dark:bg-green-500/10 dark:text-green-400"
     const ADD_MODAL_TITLE = "Add Task"
+    const ADD_MODAL_ICON = (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+        </svg>
+    )
     const ADD_MODAL_CONTENT = (
-        <div className="">
-            <form className="space-y-4">
-                <div className="space-y-2">
-                    <PrimaryInput
-                        label="Task Name"
-                        type="text"
-                        placeholder="Enter Task Name"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <PrimaryInput
-                        label="Assignee"
-                        type="text"
-                        placeholder="Enter Task Name"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <SelectInput
-                        label="Division"
-                        placeholder="Select Division"
-                    >
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
-                    </SelectInput>
-                </div>
-                <div className="space-y-2">
-                    <PrimaryInput
-                        label="Last Action"
-                        type="text"
-                        placeholder="Enter Last Action"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <SelectInput
-                        label="Status"
-                        placeholder="Select Division"
-                    >
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
-                    </SelectInput>
-                </div>
-                <div className="space-y-2">
-                    <Datepicker 
-                        label="Due Date"
-                    />
-                </div>
 
-            </form>
-        </div>
+        <form className="space-y-4">
+            <div className="space-y-2">
+                <PrimaryInput
+                    label="Task Name"
+                    type="text"
+                    placeholder="Enter Task Name"
+                />
+            </div>
+            <div className="space-y-2">
+                <SelectInput
+                    label="Assignee"
+                    placeholder="Select Assignee"
+                >
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                </SelectInput>
+            </div>
+            <div className="space-y-2">
+                <SelectInput
+                    label="Division"
+                    placeholder="Select Division"
+                >
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                </SelectInput>
+            </div>
+            <div className="space-y-2">
+                <PrimaryInput
+                    label="Last Action"
+                    type="text"
+                    placeholder="Enter Last Action"
+                />
+            </div>
+            <div className="space-y-2">
+                <SelectInput
+                    label="Status"
+                    placeholder="Select Status"
+                >
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                </SelectInput>
+            </div>
+            <div className="space-y-2">
+                <Datepicker
+                    label="Due Date"
+                />
+            </div>
+        </form>
+
     )
     const ADD_MODAL_FOOTER = (
         <>
@@ -197,13 +251,13 @@ export default function Task() {
                 onClick={() => setOpen(false)}
                 className="inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400 sm:ml-3 sm:w-auto"
             >
-                Deactivate
+                Assign Task
             </button>
             <button
                 type="button"
                 data-autofocus
                 onClick={() => setOpen(false)}
-                className="mt-3 inline-flex w-full justify-center rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/5 hover:bg-white/20 sm:mt-0 sm:w-auto"
+                className="mt-3 inline-flex w-full justify-center rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-black ring-1 ring-inset ring-white/5 dark:bg-white/10 text-white dark:hover:bg-white/20 sm:mt-0 sm:w-auto"
             >
                 Cancel
             </button>
@@ -217,7 +271,9 @@ export default function Task() {
             <Head title="Tasks" />
 
             <MainContainer>
-                <TableContainer>
+                <TableContainer
+                    tableTitle="IN PROGRESS"
+                >
                     <Table
                         thead={TABLE_TODO_HEAD}
                         tbody={TABLE_TODO_TBODY}
@@ -228,6 +284,8 @@ export default function Task() {
             <Modal
                 open={open}
                 setOpen={setOpen}
+                Icon={ADD_MODAL_ICON}
+                IconColor={ADD_MODAL_ICON_COLOR}
                 Title={ADD_MODAL_TITLE}
                 Content={ADD_MODAL_CONTENT}
                 Footer={ADD_MODAL_FOOTER}
