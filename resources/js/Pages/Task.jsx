@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Head } from "@inertiajs/react";
-
+import { SelectItem } from "@/components/ui/select"
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import MainContainer from "@/Components/DivContainer/MainContainer";
 import Modal from "@/Components/Modal";
@@ -11,7 +11,9 @@ import Table from '@/Components/Table/Table';
 import TableHeader from '@/Components/Table/TableHeader';
 import TableRow from '@/Components/Table/TableRow';
 import TableData from '@/Components/Table/TableData';
-import AddRow from '@/Components/Table/AddRow';
+import SelectInput from '@/Components/Form/SelectInput';
+import Datepicker from '@/Components/Form/Datepicker';
+
 
 export default function Task() {
     const [open, setOpen] = useState(false)
@@ -130,9 +132,6 @@ export default function Task() {
                     High
                 </TableData>
             </TableRow>
-            <AddRow>
-                + Add Task
-            </AddRow>
         </>
     )
 
@@ -140,13 +139,54 @@ export default function Task() {
     const ADD_MODAL_TITLE = "Add Task"
     const ADD_MODAL_CONTENT = (
         <div className="">
-            <form>
-                <PrimaryInput
-                    type="text"
-                    placeholder="Email"
-                    onChange={(e) => setData("email", e.target.value)}
-                    autocomplete="username"
-                />
+            <form className="space-y-4">
+                <div className="space-y-2">
+                    <PrimaryInput
+                        label="Task Name"
+                        type="text"
+                        placeholder="Enter Task Name"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <PrimaryInput
+                        label="Assignee"
+                        type="text"
+                        placeholder="Enter Task Name"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <SelectInput
+                        label="Division"
+                        placeholder="Select Division"
+                    >
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
+                    </SelectInput>
+                </div>
+                <div className="space-y-2">
+                    <PrimaryInput
+                        label="Last Action"
+                        type="text"
+                        placeholder="Enter Last Action"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <SelectInput
+                        label="Status"
+                        placeholder="Select Division"
+                    >
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
+                    </SelectInput>
+                </div>
+                <div className="space-y-2">
+                    <Datepicker 
+                        label="Due Date"
+                    />
+                </div>
+
             </form>
         </div>
     )
