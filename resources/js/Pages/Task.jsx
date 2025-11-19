@@ -1,12 +1,17 @@
-import ModalToggle from "@/Components/Button/ModalToggle";
-import Modal from "@/Components/Modal";
-import MainContainer from "@/Components/DivContainer/MainContainer";
-import PrimaryCard from "@/Components/DivContainer/PrimaryCard";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-'use client'
-
 import { useState } from 'react'
 import { Head } from "@inertiajs/react";
+
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import MainContainer from "@/Components/DivContainer/MainContainer";
+import Modal from "@/Components/Modal";
+import ModalToggle from "@/Components/Button/ModalToggle";
+import PrimaryInput from "@/Components/Form/PrimaryInput";
+import TableContainer from '@/Components/DivContainer/TableContainer';
+import Table from '@/Components/Table/Table';
+import TableHeader from '@/Components/Table/TableHeader';
+import TableRow from '@/Components/Table/TableRow';
+import TableData from '@/Components/Table/TableData';
+import AddRow from '@/Components/Table/AddRow';
 
 export default function Task() {
     const [open, setOpen] = useState(false)
@@ -25,13 +30,125 @@ export default function Task() {
         </div>
     )
 
+    // To-Do Table
+    const TABLE_TODO_HEAD = (
+        <>
+            <tr>
+                <TableHeader>
+                    Name
+                </TableHeader>
+                <TableHeader>
+                    Assignee
+                </TableHeader>
+                <TableHeader>
+                    Division
+                </TableHeader>
+                <TableHeader>
+                    Last Action
+                </TableHeader>
+                <TableHeader>
+                    Status
+                </TableHeader>
+                <TableHeader>
+                    Due Date
+                </TableHeader>
+                <TableHeader>
+                    Priority
+                </TableHeader>
+            </tr>
+        </>
+    )
+
+    const TABLE_TODO_TBODY = (
+        <>
+            <TableRow>
+                <TableData>
+                    Development of Task Monitoring WebApp for RED
+                </TableData>
+                <TableData>
+                    Aisha Cruz
+                </TableData>
+                <TableData>
+                    RICTU
+                </TableData>
+                <TableData>
+                    Forwarded to RED
+                </TableData>
+                <TableData>
+                    In Progress
+                </TableData>
+                <TableData>
+                    12/25/2025
+                </TableData>
+                <TableData>
+                    High
+                </TableData>
+            </TableRow>
+            <TableRow>
+                <TableData>
+                    Development of Task Monitoring WebApp for RED
+                </TableData>
+                <TableData>
+                    Aisha Cruz
+                </TableData>
+                <TableData>
+                    RICTU
+                </TableData>
+                <TableData>
+                    Forwarded to RED
+                </TableData>
+                <TableData>
+                    In Progress
+                </TableData>
+                <TableData>
+                    12/25/2025
+                </TableData>
+                <TableData>
+                    High
+                </TableData>
+            </TableRow>
+            <TableRow>
+                <TableData>
+                    Development of Task Monitoring WebApp for RED
+                </TableData>
+                <TableData>
+                    Aisha Cruz
+                </TableData>
+                <TableData>
+                    RICTU
+                </TableData>
+                <TableData>
+                    Forwarded to RED
+                </TableData>
+                <TableData>
+                    In Progress
+                </TableData>
+                <TableData>
+                    12/25/2025
+                </TableData>
+                <TableData>
+                    High
+                </TableData>
+            </TableRow>
+            <AddRow>
+                + Add Task
+            </AddRow>
+        </>
+    )
 
     // Add Modal
     const ADD_MODAL_TITLE = "Add Task"
     const ADD_MODAL_CONTENT = (
-        <>
-            INPUT FIELD
-        </>
+        <div className="">
+            <form>
+                <PrimaryInput
+                    type="text"
+                    placeholder="Email"
+                    onChange={(e) => setData("email", e.target.value)}
+                    autocomplete="username"
+                />
+            </form>
+        </div>
     )
     const ADD_MODAL_FOOTER = (
         <>
@@ -60,8 +177,12 @@ export default function Task() {
             <Head title="Tasks" />
 
             <MainContainer>
-                <PrimaryCard>
-                </PrimaryCard>
+                <TableContainer>
+                    <Table
+                        thead={TABLE_TODO_HEAD}
+                        tbody={TABLE_TODO_TBODY}
+                    />
+                </TableContainer>
             </MainContainer>
 
             <Modal
@@ -73,6 +194,6 @@ export default function Task() {
             >
 
             </Modal>
-        </AuthenticatedLayout>
+        </AuthenticatedLayout >
     )
 }

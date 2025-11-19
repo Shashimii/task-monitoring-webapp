@@ -1,4 +1,4 @@
-export default function PrimaryInput({ type, placeholder, value, onChange, disabled = false, error, autocomplete = "off" }) {
+export default function PrimaryInput({ type, placeholder, value, onChange, disabled = false, error, autoComplete = "off" }) {
     return (
         <div className="w-full">
             <input
@@ -7,7 +7,7 @@ export default function PrimaryInput({ type, placeholder, value, onChange, disab
                 value={value}
                 onChange={onChange}
                 disabled={disabled}
-                autocomplete={autocomplete}
+                autoComplete={autoComplete}
                 className={`
                     w-full px-4 py-2 border 
                     ${error ? "border-red-500" : "border-gray-400"}
