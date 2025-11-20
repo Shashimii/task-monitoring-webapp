@@ -17,7 +17,7 @@ export default function DatePickerDemo({ label }) {
     const [date, setDate] = React.useState(null)
 
     return (
-        <>
+        <div className="space-y-2">
             <Label
                 title={label}
             />
@@ -45,6 +45,6 @@ export default function DatePickerDemo({ label }) {
                     />
                 </PopoverContent>
             </Popover>
-        </>
+        </div>
     )
 }

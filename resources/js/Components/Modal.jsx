@@ -3,9 +3,11 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 export default function Modal({
     open,
     setOpen,
+    width = 'sm:max-w-lg',
     Icon,
     IconColor,
     Title = 'HeaderText',
+    TitleSecond = 'HeaderInfo',
     Content = 'Content',
     Footer = 'Footer'
 }) {
@@ -22,7 +24,7 @@ export default function Modal({
                     <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                         <DialogPanel
                             transition
-                            className="w-full relative transform overflow-hidden rounded-lg bg-gray-800 text-left shadow-xl outline outline-1 -outline-offset-1 outline-white/10 transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full sm:max-w-lg data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95"
+                            className={`w-full relative transform overflow-hidden rounded-lg bg-gray-800 text-left shadow-xl outline outline-1 -outline-offset-1 outline-white/10 transition-all data-[closed]:translate-y-4 data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in sm:my-8 sm:w-full ${width} data-[closed]:sm:translate-y-0 data-[closed]:sm:scale-95`}
                         >
                             <div className="bg-gray-200 px-4 pb-4 pt-5 sm:p-6 sm:pb-4 dark:bg-gray-800">
                                 <div className="flex-col">
@@ -34,7 +36,10 @@ export default function Modal({
                                         )}
 
                                         <DialogTitle as="h3" className="text-base font-semibold text-gray-800 dark:text-white">
-                                            {Title}
+                                            <div className="flex flex-col space-y-2">
+                                                {Title}
+                                                <p className="text-sm">{TitleSecond}</p>
+                                            </div>
                                         </DialogTitle>
                                     </div>
                                     <div className="w-full">

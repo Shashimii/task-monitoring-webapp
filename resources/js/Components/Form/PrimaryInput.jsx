@@ -3,7 +3,7 @@ import Label from '@/Components/Form/Label';
 
 export default function PrimaryInput({ type, placeholder, label, ...props }) {
     return (
-        <>
+        <div className="space-y-2">
             <Label
                 title={label}
             />
@@ -13,6 +13,6 @@ export default function PrimaryInput({ type, placeholder, label, ...props }) {
                 placeholder={placeholder}
                 {...props}
             />
-        </>
+        </div>
     )
 }

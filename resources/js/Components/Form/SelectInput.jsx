@@ -9,7 +9,7 @@ import {
 
 export default function SelectInput({ label, placeholder, children }) {
     return (
-        <>
+        <div className="space-y-2">
             <Label
                 title={label}
             />
@@ -21,6 +21,6 @@ export default function SelectInput({ label, placeholder, children }) {
                     {children}
                 </SelectContent>
             </Select>
-        </>
+        </div>
     )
 }
