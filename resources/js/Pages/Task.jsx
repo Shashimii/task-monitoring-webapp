@@ -26,7 +26,7 @@ export default function Task() {
     // Data
 
     // -Tasks
-    const inprogressTask = Array(6).fill({
+    const inprogressTask = Array(10).fill({
         title: "Development of Task Monitoring WebApp for RED",
         person: "Aisha Cruz",
         division: "RICTU",
@@ -42,16 +42,26 @@ export default function Task() {
     // Processing
 
     // -Add Task
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data: addTaskData, setData: setAddTaskData, post: addTaskPost, processing: addTaskProcessing, errors: addTaskErrors, reset: addTaskReset } = useForm({
         task_name: "",
         assignee: "",
-        division: [],
+        division: "",
         last_action: "",
         status: "",
         priority: "",
         due_date: "",
         description: "",
     });
+
+    const submitTask = (e) => {
+        e.preventDefault();
+
+        console.log(addTaskData)
+
+        // addTaskPost(route(''), {
+        //     onSuccess: () => addTaskReset()
+        // })
+    }
 
     // Render
 
@@ -138,25 +148,48 @@ export default function Task() {
                     label="Task Name"
                     type="text"
                     placeholder="Enter Task Name"
+                    value={addTaskData.task_name}
+                    onChange={(e) => setAddTaskData("task_name", e.target.value)}
+                    error={addTaskErrors.task_name}
                 />
 
                 <SelectInput
                     label="Division"
                     placeholder="Select Division"
+                    value={addTaskData.division}
+                    onChange={(value) => setAddTaskData("division", value)}
+                    error={addTaskErrors.division}
                 >
                     <SelectItem value="light">Light</SelectItem>
                     <SelectItem value="dark">Dark</SelectItem>
                     <SelectItem value="system">System</SelectItem>
                 </SelectInput>
-                
+
+                <SelectInput
+                    label="Priority"
+                    placeholder="Select Priority"
+                    value={addTaskData.priority}
+                    onChange={(value) => setAddTaskData("priority", value)}
+                    error={addTaskErrors.priority}
+                >
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                </SelectInput>
+
                 <Datepicker
                     label="Due Date"
+                    value={addTaskData.due_date}
+                    onChange={(date) => setAddTaskData("due_date", date)}
                 />
             </div>
             <div className="space-y-4">
                 <SelectInput
                     label="Assignee"
                     placeholder="Select Assignee"
+                    value={addTaskData.assignee}
+                    onChange={(value) => setAddTaskData("assignee", value)}
+                    error={addTaskErrors.assignee}
                 >
                     <SelectItem value="light">Light</SelectItem>
                     <SelectItem value="dark">Dark</SelectItem>
@@ -165,6 +198,9 @@ export default function Task() {
                 <SelectInput
                     label="Status"
                     placeholder="Select Status"
+                    value={addTaskData.status}
+                    onChange={(value) => setAddTaskData("status", value)}
+                    error={addTaskErrors.status}
                 >
                     <SelectItem value="light">Light</SelectItem>
                     <SelectItem value="dark">Dark</SelectItem>
@@ -174,9 +210,15 @@ export default function Task() {
                     label="Last Action"
                     type="text"
                     placeholder="Enter Last Action"
+                    value={addTaskData.last_action}
+                    onChange={(e) => setAddTaskData("last_action", e.target.value)}
+                    error={addTaskErrors.last_action}
                 />
                 <TextareaInput
                     label="Description"
+                    value={addTaskData.description}
+                    onChange={(e) => setAddTaskData("description", e.target.value)}
+                    error={addTaskErrors.description}
                 />
             </div>
         </form>
@@ -185,7 +227,8 @@ export default function Task() {
     const ADD_MODAL_FOOTER = (
         <>
             <ModalPrimary
-                onClick={() => setOpen(false)}
+                disabled={addTaskProcessing}
+                onClick={submitTask}
             >
                 Add Task
             </ModalPrimary>
