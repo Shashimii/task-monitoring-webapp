@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
-            $table->foreignId('employee_id')->constrained()->onDelete('cascade');
-            $table->foreignId('division_id')->constrained()->onDelete('cascade');
+            $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('division_id')->nullable()->constrained()->nullOnDelete();
             $table->string('last_action')->nullable();
-            $table->string('status');
-            $table->string('priority');
-            $table->timestamp('due_date');
+            $table->string('status')->nullable();
+            $table->string('priority')->nullable();
+            $table->timestamp('due_date')->nullable();
             $table->timestamps();
         });
     }
