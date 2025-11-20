@@ -22,7 +22,7 @@ import ModalPrimary from '@/Components/Button/ModalPrimary';
 import ModalSecondary from '@/Components/Button/ModalSecondary';
 
 
-export default function Task() {
+export default function Task({ divisions_data, employees_data }) {
     // Data
 
     // -Tasks
@@ -58,9 +58,15 @@ export default function Task() {
 
         console.log(addTaskData)
 
-        // addTaskPost(route(''), {
-        //     onSuccess: () => addTaskReset()
-        // })
+        // addTaskPost(route('task.store'), {
+        //     onSuccess: () => {
+        //         addTaskReset();
+        //         setOpen(false);
+        //     },
+        //     onError: (errors) => {
+        //         console.log(errors);
+        //     }
+        // });
     }
 
     // Render
@@ -160,9 +166,11 @@ export default function Task() {
                     onChange={(value) => setAddTaskData("division", value)}
                     error={addTaskErrors.division}
                 >
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
+                    {divisions_data.map((division) => (
+                        <SelectItem key={division.id} value={division.division_name}>
+                            {division.division_name}
+                        </SelectItem>
+                    ))}
                 </SelectInput>
 
                 <SelectInput
@@ -172,9 +180,9 @@ export default function Task() {
                     onChange={(value) => setAddTaskData("priority", value)}
                     error={addTaskErrors.priority}
                 >
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
                 </SelectInput>
 
                 <Datepicker
@@ -191,9 +199,11 @@ export default function Task() {
                     onChange={(value) => setAddTaskData("assignee", value)}
                     error={addTaskErrors.assignee}
                 >
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
+                    {employees_data.map((employee) => (
+                        <SelectItem key={employee.id} value={employee.id}>
+                            {employee.last_name} {employee.first_name}
+                        </SelectItem>
+                    ))}
                 </SelectInput>
                 <SelectInput
                     label="Status"
@@ -202,9 +212,9 @@ export default function Task() {
                     onChange={(value) => setAddTaskData("status", value)}
                     error={addTaskErrors.status}
                 >
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
+                    <SelectItem value="Not Started">Not Started</SelectItem>
+                    <SelectItem value="In Progress">In Progress</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
                 </SelectInput>
                 <PrimaryInput
                     label="Last Action"
