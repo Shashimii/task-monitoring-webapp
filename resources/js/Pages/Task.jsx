@@ -20,6 +20,21 @@ import DivisionContainer from '@/Components/Misc/DivisionContainer';
 
 
 export default function Task() {
+    // Data
+    const inprogressTask = Array(6).fill({
+        title: "Development of Task Monitoring WebApp for RED",
+        person: "Aisha Cruz",
+        division: "RICTU",
+        divisionBg: "bg-cyan-500",
+        forwarded: "Forwarded to RED",
+        status: "IN PROGRESS",
+        statusBg: "bg-orange-400",
+        date: "12/25/2025",
+        priority: "Highest",
+        priorityBg: "bg-red-600",
+    });
+
+    // Render
     const [open, setOpen] = useState(false)
 
     const HEADER_CONTENT = (
@@ -67,117 +82,31 @@ export default function Task() {
 
     const TABLE_TODO_TBODY = (
         <>
-            <TableRow>
-                <TableData>
-                    Development of Task Monitoring WebApp for RED
-                </TableData>
-                <TableData>
-                    Aisha Cruz
-                </TableData>
-                <TableData>
-                    <DivisionContainer
-                        bgcolor="bg-cyan-500"
-                    >
-                        RICTU
-                    </DivisionContainer>
-                </TableData>
-                <TableData>
-                    Forwarded to RED
-                </TableData>
-                <TableData>
-                    <StatusContainer
-                        bgcolor="bg-orange-400"
-                    >
-                        IN PROGRESS
-                    </StatusContainer>
-                </TableData>
-                <TableData>
-                    <DateContainer>
-                        12/25/2025
-                    </DateContainer>
-                </TableData>
-                <TableData>
-                    <Badge
-                        bgcolor="bg-red-600"
-                    >
-                        Highest
-                    </Badge>
-                </TableData>
-            </TableRow>
-            <TableRow>
-                <TableData>
-                    Development of Task Monitoring WebApp for RED
-                </TableData>
-                <TableData>
-                    Aisha Cruz
-                </TableData>
-                <TableData>
-                    <DivisionContainer
-                        bgcolor="bg-gray-500"
-                    >
-                        FD
-                    </DivisionContainer>
-                </TableData>
-                <TableData>
-                    Forwarded to RED
-                </TableData>
-                <TableData>
-                    <StatusContainer
-                        bgcolor="bg-green-400"
-                    >
-                        DONE
-                    </StatusContainer>
-                </TableData>
-                <TableData>
-                    <DateContainer>
-                        12/25/2025
-                    </DateContainer>
-                </TableData>
-                <TableData>
-                    <Badge
-                        bgcolor="bg-green-600"
-                    >
-                        Low
-                    </Badge>
-                </TableData>
-            </TableRow>
-            <TableRow>
-                <TableData>
-                    Development of Task Monitoring WebApp for RED
-                </TableData>
-                <TableData>
-                    Aisha Cruz
-                </TableData>
-                <TableData>
-                    <DivisionContainer
-                        bgcolor="bg-pink-500"
-                    >
-                        PMD
-                    </DivisionContainer>
-                </TableData>
-                <TableData>
-                    Forwarded to RED
-                </TableData>
-                <TableData>
-                    <StatusContainer
-                        bgcolor="bg-gray-400"
-                    >
-                        NOT STARTED
-                    </StatusContainer>
-                </TableData>
-                <TableData>
-                    <DateContainer>
-                        12/25/2025
-                    </DateContainer>
-                </TableData>
-                <TableData>
-                    <Badge
-                        bgcolor="bg-orange-600"
-                    >
-                        Medium
-                    </Badge>
-                </TableData>
-            </TableRow>
+            {inprogressTask.map((task, i) => (
+                <TableRow key={i}>
+                    <TableData>{task.title}</TableData>
+                    <TableData>{task.person}</TableData>
+                    <TableData>
+                        <DivisionContainer bgcolor={task.divisionBg}>
+                            {task.division}
+                        </DivisionContainer>
+                    </TableData>
+                    <TableData>{task.forwarded}</TableData>
+                    <TableData>
+                        <StatusContainer bgcolor={task.statusBg}>
+                            {task.status}
+                        </StatusContainer>
+                    </TableData>
+                    <TableData>
+                        <DateContainer>{task.date}</DateContainer>
+                    </TableData>
+                    <TableData>
+                        <Badge bgcolor={task.priorityBg}>
+                            {task.priority}
+                        </Badge>
+                    </TableData>
+                </TableRow>
+            ))}
         </>
     )
 
