@@ -1,10 +1,7 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/Button/PrimaryButton';
 import PrimaryInput from '@/Components/Form/PrimaryInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -40,7 +37,7 @@ export default function Login({ status, canResetPassword }) {
                             <p className="font-medium text-2xl md:text-3xl text-center">
                                 Task Management System
                             </p>
-                            <p className="text-gray-600 text-center">
+                            <p className="text-gray-600 text-center dark:text-gray-200">
                                 Please enter your Login credentials.
                             </p>
                         </div>
@@ -66,14 +63,14 @@ export default function Login({ status, canResetPassword }) {
                                 disabled={processing}
                                 onClick={submit}
                             />
-                            <p className="text-gray-600 text-center mt-2">
+                            <p className="text-gray-600 text-center mt-2 dark:text-gray-200">
                                 For
-                                <span className="text-green-600"> DENR NCR </span>
+                                <span className="text-green-600 dark:text-green-300"> DENR NCR </span>
                                 employees only.
                             </p>
                         </form>
                         <div className="mt-60 flex items-center justify-center">
-                            <span className="text-green-600 font-semibold"> © DENR NCR 2025</span>
+                            <span className="text-green-600 font-semibold dark:text-green-400"> © DENR NCR 2025</span>
                         </div>
                     </div>
                 </div>
