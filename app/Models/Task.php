@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
@@ -16,7 +19,13 @@ class Task extends Model
         'priority',
         'due_date'
     ];
-    
+
+    protected $casts = [
+        'division' => 'array',
+        'due_date' => 'datetime',
+    ];
+
+
     // Task -> Division
     public function division()
     {

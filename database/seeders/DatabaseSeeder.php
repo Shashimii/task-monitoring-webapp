@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Division;
+use App\Models\Employee;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,9 +17,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+        $divisions = ['RICTU', 'ORED', 'GSS', 'PMD', 'RAC', 'LEGAL', 'SMD', 'ED'];
+        
+        foreach ($divisions as $name) {
+            Division::create([
+                'division_name' => $name
+            ]);
+        }
+
+        Employee::factory(7)->create();
+
     }
 }
