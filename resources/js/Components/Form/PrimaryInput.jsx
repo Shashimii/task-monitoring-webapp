@@ -1,7 +1,7 @@
 import { Input } from '@/Components/ui/input';
 import Label from '@/Components/Form/Label';
 
-export default function PrimaryInput({ type, placeholder, label }) {
+export default function PrimaryInput({ type, placeholder, label, ...props }) {
     return (
         <>
             <Label
@@ -11,6 +11,7 @@ export default function PrimaryInput({ type, placeholder, label }) {
             <Input
                 type={type}
                 placeholder={placeholder}
+                {...props}
             />
         </>
     )
