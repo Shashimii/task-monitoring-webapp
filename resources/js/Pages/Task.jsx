@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Head, useForm } from "@inertiajs/react";
 import { SelectItem } from "@/components/ui/select"
+import { toast } from 'sonner';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import MainContainer from "@/Components/DivContainer/MainContainer";
 import Modal from "@/Components/Modal";
@@ -56,18 +57,29 @@ export default function Task({ divisions_data, employees_data }) {
     const submitTask = (e) => {
         e.preventDefault();
 
-        console.log(addTaskData)
+        // Show a loading toast
+        const toastId = toast.loading("Creating task...");
 
-        // addTaskPost(route('task.store'), {
-        //     onSuccess: () => {
-        //         addTaskReset();
-        //         setOpen(false);
-        //     },
-        //     onError: (errors) => {
-        //         console.log(errors);
-        //     }
-        // });
-    }
+        addTaskPost(route("task.store"), {
+            onSuccess: () => {
+                addTaskReset();
+                setOpen(false);
+
+                // Dismiss loading toast and show success
+                toast.dismiss(toastId);
+                toast.success("Task Created!");
+            },
+            onError: (errors) => {
+                // Flatten error messages
+                const messages = Object.values(errors).flat().join(", ");
+
+                // Dismiss loading toast and show error
+                toast.dismiss(toastId);
+                toast.error(messages || "Something went wrong.");
+            },
+        });
+    };
+
 
     // Render
 
@@ -167,7 +179,7 @@ export default function Task({ divisions_data, employees_data }) {
                     error={addTaskErrors.division}
                 >
                     {divisions_data.map((division) => (
-                        <SelectItem key={division.id} value={division.division_name}>
+                        <SelectItem key={division.id} value={String(division.id)}>
                             {division.division_name}
                         </SelectItem>
                     ))}
@@ -200,7 +212,7 @@ export default function Task({ divisions_data, employees_data }) {
                     error={addTaskErrors.assignee}
                 >
                     {employees_data.map((employee) => (
-                        <SelectItem key={employee.id} value={employee.id}>
+                        <SelectItem key={employee.id} value={String(employee.id)}>
                             {employee.last_name} {employee.first_name}
                         </SelectItem>
                     ))}
