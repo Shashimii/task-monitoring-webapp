@@ -109,7 +109,37 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        //
+        $validated = $request->validate([
+            'task_name' => 'required|string|max:255',
+            'assignee' => 'nullable|string|max:255',
+            'division' => 'nullable|string|max:255',
+            'last_action' => 'nullable|string|max:255',
+            'status' => 'nullable|string|max:255',
+            'priority' => 'nullable|string|max:255',
+            'due_date' => 'nullable|date',
+            'description' => 'nullable|string',
+        ]);
+
+        $employeeId = !empty($validated['assignee'])
+            ? intval($validated['assignee'])
+            : null;
+
+        $divisionId = !empty($validated['division'])
+            ? intval($validated['division'])
+            : null;
+
+        $task->update([
+            'name' => $validated['task_name'],
+            'employee_id' => $employeeId,
+            'division_id' => $divisionId,
+            'last_action' => $validated['last_action'] ?? null,
+            'status' => $validated['status'] ?? null,
+            'priority' => $validated['priority'] ?? null,
+            'due_date' => $validated['due_date'] ?? null,
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return back()->with('success', 'Task updated successfully!');
     }
 
     /**
