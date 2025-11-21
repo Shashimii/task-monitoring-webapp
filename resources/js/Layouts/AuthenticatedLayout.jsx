@@ -193,7 +193,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 <div>
                     {children}
-                    <Toaster richColors position="bottom-right" />
+                    <Toaster richColors position="top-center" />
                 </div>
             </div>
         </ThemeProvider>

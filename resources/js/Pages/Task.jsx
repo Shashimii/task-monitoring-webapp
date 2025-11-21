@@ -25,29 +25,16 @@ import ModalSecondary from '@/Components/Button/ModalSecondary';
 
 export default function Task({ divisions_data, employees_data }) {
     // Data
-    const inprogressTask = Array(10).fill({
-        title: "Development of Task Monitoring WebApp for RED",
-        person: "Aisha Cruz",
-        division: "RICTU",
-        divisionBg: "bg-cyan-500",
-        forwarded: "Forwarded to RED",
-        status: "IN PROGRESS",
-        statusBg: "bg-orange-400",
-        date: "12/25/2025",
-        priority: "Highest",
-        priorityBg: "bg-red-600",
-    });
-
     const { props } = usePage();
-    const { 
-        notStarted_data, 
-        inProgress_data,
-        completed_data,
+    const {
+        notStarted_data = [],
+        inProgress_data = [],
+        completed_data = [],
     } = props;
 
-    console.log(inProgress_data)
-    // Processing
+    // console.log(inProgress_data)
 
+    // Processing
     // -Add Task
     const { data: addTaskData, setData: setAddTaskData, post: addTaskPost, processing: addTaskProcessing, errors: addTaskErrors, reset: addTaskReset } = useForm({
         task_name: "",
@@ -62,19 +49,19 @@ export default function Task({ divisions_data, employees_data }) {
 
     const submitTask = (e) => {
         e.preventDefault();
-        const toastId = toast.loading("Creating task...");
+        toast.loading("Creating task...");
 
         addTaskPost(route("task.store"), {
             onSuccess: () => {
                 addTaskReset();
                 setOpen(false);
 
-                toast.dismiss(toastId);
+                toast.dismiss();
                 toast.success("Task Created!");
             },
             onError: (errors) => {
-                const messages = Object.values(errors).flat().join(", ");
-                toast.dismiss(toastId);
+                const messages = Object.values(errors).flat().join(" ");
+                toast.dismiss();
                 toast.error(messages || "Something went wrong.");
             },
         });
@@ -82,6 +69,37 @@ export default function Task({ divisions_data, employees_data }) {
 
 
     // Render
+    // Helpers
+    const StatusColor = (status) => {
+        if (status === 'Not Started') {
+            return 'bg-gray-400'
+        }
+        if (status === 'In Progress') {
+            return 'bg-orange-400'
+        }
+        if (status === 'Completed') {
+            return 'bg-green-400'
+        }
+    }
+
+    const PriorityColor = (priority) => {
+        if (priority === 'High') {
+            return 'bg-red-600'
+        }
+        if (priority === 'Medium') {
+            return 'bg-orange-600'
+        }
+        if (priority === 'Low') {
+            return 'bg-green-600'
+        }
+    }
+
+    const DateColor = (date) => {
+        if (date) {
+            return 'bg-red-100'
+        }
+    }
+
 
     // -Header Title
     const HEADER_CONTENT = (
@@ -128,7 +146,7 @@ export default function Task({ divisions_data, employees_data }) {
     )
     const TABLE_TODO_TBODY = (
         <>
-            {inProgress_data.map(task => (
+            {inProgress_data.data?.map(task => (
                 <TableRow key={task.id}>
                     <TableData>{task?.name}</TableData>
                     <TableData>{task?.employee?.first_name} {task?.employee?.last_name}</TableData>
@@ -139,15 +157,17 @@ export default function Task({ divisions_data, employees_data }) {
                     </TableData>
                     <TableData>{task?.last_action}</TableData>
                     <TableData>
-                        <StatusContainer bgcolor={task.statusBg}>
+                        <StatusContainer bgcolor={StatusColor(task?.status)}>
                             {task?.status}
                         </StatusContainer>
                     </TableData>
                     <TableData>
-                        <DateContainer>{task?.due_date}</DateContainer>
+                        <DateContainer bgcolor={DateColor(task?.due_date)}>
+                            {task?.due_date}
+                        </DateContainer>
                     </TableData>
                     <TableData>
-                        <Badge bgcolor={task.priorityBg}>
+                        <Badge bgcolor={PriorityColor(task?.priority)}>
                             {task?.priority}
                         </Badge>
                     </TableData>

@@ -7,7 +7,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-export default function SelectInput({ label, placeholder, children, value, onChange }) {
+export default function SelectInput({ label, placeholder, children, value, onChange, error }) {
     return (
         <div className="space-y-2">
             <Label
@@ -21,6 +21,8 @@ export default function SelectInput({ label, placeholder, children, value, onCha
                     {children}
                 </SelectContent>
             </Select>
+            
+            <p className="text-red-600 dark:text-red-500">{error}</p>
         </div>
     )
 }

@@ -1,6 +1,6 @@
-export default function DateContainer({ children }) {
+export default function DateContainer({ children, bgcolor }) {
     return (
-        <span className="text-red-600 font-semibold bg-red-100 px-4 py-2 rounded-full">
+        <span className={`text-red-600 font-semibold px-4 py-2 rounded-full ${bgcolor}`}>
             {children}
         </span>
     )

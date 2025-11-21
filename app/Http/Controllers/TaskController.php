@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TaskResource;
 use App\Models\Division;
 use App\Models\Employee;
 use App\Models\Task;
@@ -35,9 +36,9 @@ class TaskController extends Controller
         return Inertia::render('Task', [
             'divisions_data' => $divisions,
             'employees_data' => $employees,
-            'notStarted_data' => $notStarted,
-            'inProgress_data' => $inProgress,
-            'completed_data' => $completed
+            'notStarted_data' => TaskResource::collection($notStarted),
+            'inProgress_data' => TaskResource::collection($inProgress),
+            'completed_data' => TaskResource::collection($completed),
         ]);
     }
 
@@ -56,11 +57,11 @@ class TaskController extends Controller
     {
         $validated = $request->validate([
             'task_name' => 'required|string|max:255',
-            'assignee' => 'nullable|string|max:255',
-            'division' => 'nullable|string|max:255',
+            'assignee' => 'required|string|max:255',
+            'division' => 'required|string|max:255',
             'last_action' => 'nullable|string|max:255',
-            'status' => 'nullable|string|max:255',
-            'priority' => 'nullable|string|max:255',
+            'status' => 'required|string|max:255',
+            'priority' => 'required|string|max:255',
             'due_date' => 'nullable|date',
             'description' => 'nullable|string',
         ]);
