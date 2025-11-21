@@ -16,7 +16,7 @@ import {
 export default function Datepicker({ label, value, onChange }) {
     return (
         <div className="space-y-2">
-            <Label title={label} />
+            {label && <Label title={label} />}
             <Popover>
                 <PopoverTrigger asChild>
                     <Button
