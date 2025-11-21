@@ -6,6 +6,7 @@ import ModeToggle from '@/Components/Button/ModeToggle';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { ThemeProvider } from '@/Components/themeProvider';
+import { Toaster } from 'sonner';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -192,6 +193,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 <div>
                     {children}
+                    <Toaster richColors position="bottom-right" />
                 </div>
             </div>
         </ThemeProvider>
