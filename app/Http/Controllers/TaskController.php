@@ -19,9 +19,25 @@ class TaskController extends Controller
         $divisions = Division::all();
         $employees = Employee::orderBy('last_name', 'asc')->get();
 
+        $notStarted = Task::with('division', 'employee')
+            ->where('status', 'not_started')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $inProgress = Task::with('division', 'employee')
+            ->where('status', 'in_progress')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $completed = Task::with('division', 'employee')
+            ->where('status', 'completed')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return Inertia::render('Task', [
             'divisions_data' => $divisions,
-            'employees_data' => $employees
+            'employees_data' => $employees,
+            'notStarted_data' => $notStarted,
+            'inProgress_data' => $inProgress,
+            'completed_data' => $completed
         ]);
     }
 

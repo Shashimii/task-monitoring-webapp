@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Head, useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import { SelectItem } from "@/components/ui/select"
 import { toast } from 'sonner';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -25,8 +25,6 @@ import ModalSecondary from '@/Components/Button/ModalSecondary';
 
 export default function Task({ divisions_data, employees_data }) {
     // Data
-
-    // -Tasks
     const inprogressTask = Array(10).fill({
         title: "Development of Task Monitoring WebApp for RED",
         person: "Aisha Cruz",
@@ -40,6 +38,14 @@ export default function Task({ divisions_data, employees_data }) {
         priorityBg: "bg-red-600",
     });
 
+    const { props } = usePage();
+    const { 
+        notStarted_data, 
+        inProgress_data,
+        completed_data,
+    } = props;
+
+    console.log(inProgress_data)
     // Processing
 
     // -Add Task
@@ -56,8 +62,6 @@ export default function Task({ divisions_data, employees_data }) {
 
     const submitTask = (e) => {
         e.preventDefault();
-
-        // Show a loading toast
         const toastId = toast.loading("Creating task...");
 
         addTaskPost(route("task.store"), {
@@ -65,15 +69,11 @@ export default function Task({ divisions_data, employees_data }) {
                 addTaskReset();
                 setOpen(false);
 
-                // Dismiss loading toast and show success
                 toast.dismiss(toastId);
                 toast.success("Task Created!");
             },
             onError: (errors) => {
-                // Flatten error messages
                 const messages = Object.values(errors).flat().join(", ");
-
-                // Dismiss loading toast and show error
                 toast.dismiss(toastId);
                 toast.error(messages || "Something went wrong.");
             },
@@ -128,27 +128,27 @@ export default function Task({ divisions_data, employees_data }) {
     )
     const TABLE_TODO_TBODY = (
         <>
-            {inprogressTask.map((task, i) => (
-                <TableRow key={i}>
-                    <TableData>{task.title}</TableData>
-                    <TableData>{task.person}</TableData>
+            {inProgress_data.map(task => (
+                <TableRow key={task.id}>
+                    <TableData>{task?.name}</TableData>
+                    <TableData>{task?.employee?.first_name} {task?.employee?.last_name}</TableData>
                     <TableData>
                         <DivisionContainer bgcolor={task.divisionBg}>
-                            {task.division}
+                            {task?.division?.division_name}
                         </DivisionContainer>
                     </TableData>
-                    <TableData>{task.forwarded}</TableData>
+                    <TableData>{task?.last_action}</TableData>
                     <TableData>
                         <StatusContainer bgcolor={task.statusBg}>
-                            {task.status}
+                            {task?.status}
                         </StatusContainer>
                     </TableData>
                     <TableData>
-                        <DateContainer>{task.date}</DateContainer>
+                        <DateContainer>{task?.due_date}</DateContainer>
                     </TableData>
                     <TableData>
                         <Badge bgcolor={task.priorityBg}>
-                            {task.priority}
+                            {task?.priority}
                         </Badge>
                     </TableData>
                 </TableRow>
@@ -192,9 +192,9 @@ export default function Task({ divisions_data, employees_data }) {
                     onChange={(value) => setAddTaskData("priority", value)}
                     error={addTaskErrors.priority}
                 >
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
                 </SelectInput>
 
                 <Datepicker
@@ -224,9 +224,9 @@ export default function Task({ divisions_data, employees_data }) {
                     onChange={(value) => setAddTaskData("status", value)}
                     error={addTaskErrors.status}
                 >
-                    <SelectItem value="Not Started">Not Started</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="not_started">Not Started</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
                 </SelectInput>
                 <PrimaryInput
                     label="Last Action"
