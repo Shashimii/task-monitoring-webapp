@@ -21,7 +21,6 @@ class Task extends Model
     ];
 
     protected $casts = [
-        'division' => 'array',
         'due_date' => 'datetime',
     ];
 
