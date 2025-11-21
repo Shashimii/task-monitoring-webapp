@@ -49,10 +49,18 @@ class TaskController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        $employeeId = !empty($validated['assignee'])
+            ? intval($validated['assignee'])
+            : null;
+
+        $divisionId = !empty($validated['division'])
+            ? intval($validated['division'])
+            : null;
+
         $task = Task::create([
             'name' => $validated['task_name'],
-            'assignee' => $validated['assignee'] ?? null,
-            'division' => $validated['division'] ?? null,
+            'employee_id' => $employeeId,
+            'division_id' => $divisionId,
             'last_action' => $validated['last_action'] ?? null,
             'status' => $validated['status'] ?? null,
             'priority' => $validated['priority'] ?? null,
