@@ -46,7 +46,6 @@ export default function Task({ divisions_data, employees_data }) {
         due_date: "",
         description: "",
     });
-
     const submitTask = (e) => {
         e.preventDefault();
         toast.loading("Creating task...");
@@ -67,9 +66,8 @@ export default function Task({ divisions_data, employees_data }) {
         });
     };
 
-
     // Render
-    // Helpers
+    // -Helpers
     const StatusColor = (status) => {
         if (status === 'Not Started') {
             return 'bg-gray-400'
@@ -81,7 +79,6 @@ export default function Task({ divisions_data, employees_data }) {
             return 'bg-green-400'
         }
     }
-
     const PriorityColor = (priority) => {
         if (priority === 'High') {
             return 'bg-red-600'
@@ -93,13 +90,11 @@ export default function Task({ divisions_data, employees_data }) {
             return 'bg-green-600'
         }
     }
-
     const DateColor = (date) => {
         if (date) {
             return 'bg-red-100'
         }
     }
-
 
     // -Header Title
     const HEADER_CONTENT = (
@@ -117,6 +112,9 @@ export default function Task({ divisions_data, employees_data }) {
     )
 
     // -To-Do Table
+    // -Edit Toggle
+    const [editing, setEditing] = useState(false)
+
     const TABLE_TODO_HEAD = (
         <>
             <tr>
@@ -141,6 +139,9 @@ export default function Task({ divisions_data, employees_data }) {
                 <TableHeader>
                     Priority
                 </TableHeader>
+                <TableHeader>
+                    Action
+                </TableHeader>
             </tr>
         </>
     )
@@ -148,12 +149,47 @@ export default function Task({ divisions_data, employees_data }) {
         <>
             {inProgress_data.data?.map(task => (
                 <TableRow key={task.id}>
-                    <TableData>{task?.name}</TableData>
-                    <TableData>{task?.employee?.first_name} {task?.employee?.last_name}</TableData>
                     <TableData>
-                        <DivisionContainer bgcolor={task.divisionBg}>
-                            {task?.division?.division_name}
-                        </DivisionContainer>
+                        {!editing && (
+                            task?.name
+                        )}
+
+                        {editing && (
+                            <PrimaryInput
+                                value={task?.name}
+                            />
+                        )}
+                    </TableData>
+                    <TableData>
+                        {!editing && (
+                            task?.employee?.first_name + ' ' + task?.employee?.last_name
+                        )}
+
+                        {editing && (
+                            <PrimaryInput
+                                value={task?.employee?.first_name + ' ' + task?.employee?.last_name}
+                            />
+                        )}
+                    </TableData>
+                    <TableData>
+                        {!editing && (
+                            <DivisionContainer bgcolor={task.divisionBg}>
+                                {task?.division?.division_name}
+                            </DivisionContainer>
+                        )}
+
+                        {editing && (
+                            <SelectInput
+                                value={task?.division?.division_name}
+                                onChange={(value) => setAddTaskData("division", value)}
+                            >
+                                {divisions_data.map((division) => (
+                                    <SelectItem key={division.id} value={String(division.id)}>
+                                        {division.division_name}
+                                    </SelectItem>
+                                ))}
+                            </SelectInput>
+                        )}
                     </TableData>
                     <TableData>{task?.last_action}</TableData>
                     <TableData>
@@ -170,6 +206,37 @@ export default function Task({ divisions_data, employees_data }) {
                         <Badge bgcolor={PriorityColor(task?.priority)}>
                             {task?.priority}
                         </Badge>
+                    </TableData>
+                    <TableData>
+                        <span className="flex gap-4">
+                            {!editing && (
+                                <button
+                                    className="cursor-pointer text-blue-400"
+                                    onClick={() => setEditing(true)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                    </svg>
+                                </button>
+                            )}
+
+                            {editing && (
+                                <button
+                                    className="cursor-pointer text-blue-400"
+                                    onClick={() => setEditing(false)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                </button>
+                            )}
+
+                            <button className="cursor-pointer text-red-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </button>
+                        </span>
                     </TableData>
                 </TableRow>
             ))}
