@@ -24,7 +24,7 @@ import ModalPrimary from '@/Components/Button/ModalPrimary';
 import ModalSecondary from '@/Components/Button/ModalSecondary';
 
 
-export default function Task({ divisions_data, employees_data, search_params = {} }) {
+export default function Task({ divisions_data, employees_data, search_params = {}, sort_params = {} }) {
     // Data
     const { props } = usePage();
     const {
@@ -40,6 +40,13 @@ export default function Task({ divisions_data, employees_data, search_params = {
         not_started: search_params.not_started_search || '',
         in_progress: search_params.in_progress_search || '',
         completed: search_params.completed_search || '',
+    });
+
+    // Sort state for each table
+    const [sortValues, setSortValues] = useState({
+        not_started: sort_params.not_started_sort || 'desc',
+        in_progress: sort_params.in_progress_sort || 'desc',
+        completed: sort_params.completed_sort || 'desc',
     });
 
     // Debounced search values
@@ -72,6 +79,12 @@ export default function Task({ divisions_data, employees_data, search_params = {
 
             // Preserve all table page parameters
             ['not_started_page', 'in_progress_page', 'completed_page'].forEach(param => {
+                const value = currentParams.get(param);
+                if (value) params[param] = value;
+            });
+
+            // Preserve all table sort parameters
+            ['not_started_sort', 'in_progress_sort', 'completed_sort'].forEach(param => {
                 const value = currentParams.get(param);
                 if (value) params[param] = value;
             });
@@ -110,6 +123,47 @@ export default function Task({ divisions_data, employees_data, search_params = {
             ...prev,
             [tableType]: value
         }));
+    };
+
+    // Handle sort order change
+    const handleSortChange = (tableType, value) => {
+        setSortValues(prev => ({
+            ...prev,
+            [tableType]: value
+        }));
+
+        // Get current URL params to preserve other table states
+        const currentParams = new URLSearchParams(window.location.search);
+        const params = {};
+
+        // Preserve all table page parameters
+        ['not_started_page', 'in_progress_page', 'completed_page'].forEach(param => {
+            const val = currentParams.get(param);
+            if (val) params[param] = val;
+        });
+
+        // Preserve all table search parameters
+        ['not_started_search', 'in_progress_search', 'completed_search'].forEach(param => {
+            const val = currentParams.get(param);
+            if (val) params[param] = val;
+        });
+
+        // Preserve other table sort parameters
+        ['not_started_sort', 'in_progress_sort', 'completed_sort'].forEach(param => {
+            if (param !== `${tableType}_sort`) {
+                const val = currentParams.get(param);
+                if (val) params[param] = val;
+            }
+        });
+
+        // Set current table sort and reset to page 1
+        params[`${tableType}_sort`] = value;
+        params[`${tableType}_page`] = 1;
+
+        router.get(route('task.index'), params, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     // Helper function to safely get array from paginated data
@@ -1106,15 +1160,24 @@ export default function Task({ divisions_data, employees_data, search_params = {
                         tableTitle="NOT STARTED"
                         borderColor="border-gray-500"
                     >
-                        {/* Search Bar */}
-                        <div className="mb-4">
+                        {/* Search Bar and Sort Filter */}
+                        <div className="mb-4 flex gap-4">
                             <PrimaryInput
                                 type="text"
                                 placeholder="Search by name, assignee, division, or last action..."
                                 value={searchValues.not_started}
                                 onChange={(e) => handleSearchChange('not_started', e.target.value)}
-                                className="w-full"
+                                className="flex-1"
                             />
+                            <SelectInput
+                                placeholder="Sort Order"
+                                value={sortValues.not_started}
+                                onChange={(value) => handleSortChange('not_started', value)}
+                                className="w-40"
+                            >
+                                <SelectItem value="desc">Descending</SelectItem>
+                                <SelectItem value="asc">Ascending</SelectItem>
+                            </SelectInput>
                         </div>
                         <Table
                             thead={TABLE_NOT_STARTED_HEAD}
@@ -1138,15 +1201,24 @@ export default function Task({ divisions_data, employees_data, search_params = {
                     tableTitle="IN PROGRESS"
                         borderColor="border-orange-500"
                 >
-                    {/* Search Bar */}
-                    <div className="mb-4">
+                    {/* Search Bar and Sort Filter */}
+                    <div className="mb-4 flex gap-4">
                             <PrimaryInput
                                 type="text"
                                 placeholder="Search by name, assignee, division, or last action..."
                                 value={searchValues.in_progress}
                                 onChange={(e) => handleSearchChange('in_progress', e.target.value)}
-                                className="w-full"
+                                className="flex-1"
                             />
+                            <SelectInput
+                                placeholder="Sort Order"
+                                value={sortValues.in_progress}
+                                onChange={(value) => handleSortChange('in_progress', value)}
+                                className="w-40"
+                            >
+                                <SelectItem value="desc">Descending</SelectItem>
+                                <SelectItem value="asc">Ascending</SelectItem>
+                            </SelectInput>
                     </div>
                     <Table
                         thead={TABLE_TODO_HEAD}
@@ -1170,15 +1242,24 @@ export default function Task({ divisions_data, employees_data, search_params = {
                         tableTitle="COMPLETED"
                         borderColor="border-green-500"
                     >
-                        {/* Search Bar */}
-                        <div className="mb-4">
+                        {/* Search Bar and Sort Filter */}
+                        <div className="mb-4 flex gap-4">
                             <PrimaryInput
                                 type="text"
                                 placeholder="Search by name, assignee, division, or last action..."
                                 value={searchValues.completed}
                                 onChange={(e) => handleSearchChange('completed', e.target.value)}
-                                className="w-full"
+                                className="flex-1"
                             />
+                            <SelectInput
+                                placeholder="Sort Order"
+                                value={sortValues.completed}
+                                onChange={(value) => handleSortChange('completed', value)}
+                                className="w-40"
+                            >
+                                <SelectItem value="desc">Descending</SelectItem>
+                                <SelectItem value="asc">Ascending</SelectItem>
+                            </SelectInput>
                         </div>
                         <Table
                             thead={TABLE_COMPLETED_HEAD}

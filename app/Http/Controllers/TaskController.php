@@ -30,6 +30,16 @@ class TaskController extends Controller
         $inProgressSearch = $request->get('in_progress_search', '');
         $completedSearch = $request->get('completed_search', '');
 
+        // Get sort order for each table (asc or desc, default to desc)
+        $notStartedSort = $request->get('not_started_sort', 'desc');
+        $inProgressSort = $request->get('in_progress_sort', 'desc');
+        $completedSort = $request->get('completed_sort', 'desc');
+
+        // Validate sort order
+        $notStartedSort = in_array($notStartedSort, ['asc', 'desc']) ? $notStartedSort : 'desc';
+        $inProgressSort = in_array($inProgressSort, ['asc', 'desc']) ? $inProgressSort : 'desc';
+        $completedSort = in_array($completedSort, ['asc', 'desc']) ? $completedSort : 'desc';
+
         // Helper function to apply search
         $applySearch = function($query, $search) {
             if (!empty($search)) {
@@ -51,21 +61,21 @@ class TaskController extends Controller
         $notStarted = $applySearch(
             Task::with('division', 'employee')
                 ->where('status', 'not_started')
-                ->orderBy('created_at', 'desc'),
+                ->orderBy('created_at', $notStartedSort),
             $notStartedSearch
         )->paginate(7, ['*'], 'not_started_page', $notStartedPage);
 
         $inProgress = $applySearch(
             Task::with('division', 'employee')
                 ->where('status', 'in_progress')
-                ->orderBy('created_at', 'desc'),
+                ->orderBy('created_at', $inProgressSort),
             $inProgressSearch
         )->paginate(7, ['*'], 'in_progress_page', $inProgressPage);
 
         $completed = $applySearch(
             Task::with('division', 'employee')
                 ->where('status', 'completed')
-                ->orderBy('created_at', 'desc'),
+                ->orderBy('created_at', $completedSort),
             $completedSearch
         )->paginate(7, ['*'], 'completed_page', $completedPage);
 
@@ -100,6 +110,11 @@ class TaskController extends Controller
                 'not_started_search' => $notStartedSearch,
                 'in_progress_search' => $inProgressSearch,
                 'completed_search' => $completedSearch,
+            ],
+            'sort_params' => [
+                'not_started_sort' => $notStartedSort,
+                'in_progress_sort' => $inProgressSort,
+                'completed_sort' => $completedSort,
             ],
         ]);
     }
