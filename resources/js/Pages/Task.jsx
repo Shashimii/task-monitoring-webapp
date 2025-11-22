@@ -370,6 +370,8 @@ export default function Task({ divisions_data, employees_data }) {
                                                 toast.loading("Updating task...")
 
                                                 router.put(route("task.update", task.id), editTaskData, {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
                                                     onSuccess: () => {
                                                         setEditingTaskId(null)
                                                         setEditTaskData({})
@@ -602,6 +604,8 @@ export default function Task({ divisions_data, employees_data }) {
                                                 toast.loading("Updating task...")
 
                                                 router.put(route("task.update", task.id), editTaskData, {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
                                                     onSuccess: () => {
                                                         setEditingTaskId(null)
                                                         setEditTaskData({})
@@ -834,6 +838,8 @@ export default function Task({ divisions_data, employees_data }) {
                                                 toast.loading("Updating task...")
 
                                                 router.put(route("task.update", task.id), editTaskData, {
+                                                    preserveState: true,
+                                                    preserveScroll: true,
                                                     onSuccess: () => {
                                                         setEditingTaskId(null)
                                                         setEditTaskData({})
