@@ -27,11 +27,11 @@ class TaskController extends Controller
         $inProgress = Task::with('division', 'employee')
             ->where('status', 'in_progress')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(7);
         $completed = Task::with('division', 'employee')
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(7);
 
         return Inertia::render('Task', [
             'divisions_data' => $divisions,
