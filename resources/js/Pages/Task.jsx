@@ -177,6 +177,8 @@ export default function Task({ divisions_data, employees_data }) {
         toast.loading("Deleting task...");
 
         router.delete(route("task.destroy", taskId), {
+            preserveState: true,
+            preserveScroll: true,
             onSuccess: () => {
                 toast.dismiss();
                 toast.success("Task deleted!");
