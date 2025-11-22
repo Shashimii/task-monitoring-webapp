@@ -23,7 +23,7 @@ class TaskController extends Controller
         $notStarted = Task::with('division', 'employee')
             ->where('status', 'not_started')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(7);
         $inProgress = Task::with('division', 'employee')
             ->where('status', 'in_progress')
             ->orderBy('created_at', 'desc')

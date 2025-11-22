@@ -32,6 +32,8 @@ export default function Task({ divisions_data, employees_data }) {
         completed_data = [],
     } = props;
 
+    console.log(notStarted_data);
+
     // console.log(inProgress_data)
 
     // Processing
