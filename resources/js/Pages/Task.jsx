@@ -1159,33 +1159,34 @@ export default function Task({ divisions_data, employees_data, search_params = {
                     <TableContainer
                         tableTitle="NOT STARTED"
                         borderColor="border-gray-500"
+                        headerContent={
+                            <div className="mb-4 flex gap-4">
+                                <PrimaryInput
+                                    type="text"
+                                    placeholder="Search by name, assignee, division, or last action..."
+                                    value={searchValues.not_started}
+                                    onChange={(e) => handleSearchChange('not_started', e.target.value)}
+                                    className="flex-1"
+                                />
+                                <SelectInput
+                                    placeholder="Sort Order"
+                                    value={sortValues.not_started}
+                                    onChange={(value) => handleSortChange('not_started', value)}
+                                    className="w-40"
+                                >
+                                    <SelectItem value="desc">Descending</SelectItem>
+                                    <SelectItem value="asc">Ascending</SelectItem>
+                                </SelectInput>
+                            </div>
+                        }
                     >
-                        {/* Search Bar and Sort Filter */}
-                        <div className="mb-4 flex gap-4">
-                            <PrimaryInput
-                                type="text"
-                                placeholder="Search by name, assignee, division, or last action..."
-                                value={searchValues.not_started}
-                                onChange={(e) => handleSearchChange('not_started', e.target.value)}
-                                className="flex-1"
-                            />
-                            <SelectInput
-                                placeholder="Sort Order"
-                                value={sortValues.not_started}
-                                onChange={(value) => handleSortChange('not_started', value)}
-                                className="w-40"
-                            >
-                                <SelectItem value="desc">Descending</SelectItem>
-                                <SelectItem value="asc">Ascending</SelectItem>
-                            </SelectInput>
-                        </div>
                         <Table
                             thead={TABLE_NOT_STARTED_HEAD}
                             tbody={TABLE_NOT_STARTED_TBODY}
                         />
                         {notStarted_data?.links && (
                             <div className="mt-4">
-                                <Pagination 
+                                <Pagination
                                     links={notStarted_data.links}
                                     current_page={notStarted_data.current_page}
                                     per_page={notStarted_data.per_page}
@@ -1197,77 +1198,79 @@ export default function Task({ divisions_data, employees_data, search_params = {
                         )}
                     </TableContainer>
 
-                <TableContainer
-                    tableTitle="IN PROGRESS"
+                    <TableContainer
+                        tableTitle="IN PROGRESS"
                         borderColor="border-orange-500"
-                >
-                    {/* Search Bar and Sort Filter */}
-                    <div className="mb-4 flex gap-4">
-                            <PrimaryInput
-                                type="text"
-                                placeholder="Search by name, assignee, division, or last action..."
-                                value={searchValues.in_progress}
-                                onChange={(e) => handleSearchChange('in_progress', e.target.value)}
-                                className="flex-1"
-                            />
-                            <SelectInput
-                                placeholder="Sort Order"
-                                value={sortValues.in_progress}
-                                onChange={(value) => handleSortChange('in_progress', value)}
-                                className="w-40"
-                            >
-                                <SelectItem value="desc">Descending</SelectItem>
-                                <SelectItem value="asc">Ascending</SelectItem>
-                            </SelectInput>
-                    </div>
-                    <Table
-                        thead={TABLE_TODO_HEAD}
-                        tbody={TABLE_TODO_TBODY}
-                    />
-                    {inProgress_data?.links && (
-                        <div className="mt-4">
-                            <Pagination 
-                                links={inProgress_data.links}
-                                current_page={inProgress_data.current_page}
-                                per_page={inProgress_data.per_page}
-                                total={inProgress_data.total}
-                                last_page={inProgress_data.last_page}
-                                tableType="in_progress"
-                            />
-                        </div>
-                    )}
-                </TableContainer>
+                        headerContent={
+                            <div className="mb-4 flex gap-4">
+                                <PrimaryInput
+                                    type="text"
+                                    placeholder="Search by name, assignee, division, or last action..."
+                                    value={searchValues.in_progress}
+                                    onChange={(e) => handleSearchChange('in_progress', e.target.value)}
+                                    className="flex-1"
+                                />
+                                <SelectInput
+                                    placeholder="Sort Order"
+                                    value={sortValues.in_progress}
+                                    onChange={(value) => handleSortChange('in_progress', value)}
+                                    className="w-40"
+                                >
+                                    <SelectItem value="desc">Descending</SelectItem>
+                                    <SelectItem value="asc">Ascending</SelectItem>
+                                </SelectInput>
+                            </div>
+                        }
+                    >
+                        <Table
+                            thead={TABLE_TODO_HEAD}
+                            tbody={TABLE_TODO_TBODY}
+                        />
+                        {inProgress_data?.links && (
+                            <div className="mt-4">
+                                <Pagination
+                                    links={inProgress_data.links}
+                                    current_page={inProgress_data.current_page}
+                                    per_page={inProgress_data.per_page}
+                                    total={inProgress_data.total}
+                                    last_page={inProgress_data.last_page}
+                                    tableType="in_progress"
+                                />
+                            </div>
+                        )}
+                    </TableContainer>
 
                     <TableContainer
                         tableTitle="COMPLETED"
                         borderColor="border-green-500"
+                        headerContent={
+                            <div className="mb-4 flex gap-4">
+                                <PrimaryInput
+                                    type="text"
+                                    placeholder="Search by name, assignee, division, or last action..."
+                                    value={searchValues.completed}
+                                    onChange={(e) => handleSearchChange('completed', e.target.value)}
+                                    className="flex-1"
+                                />
+                                <SelectInput
+                                    placeholder="Sort Order"
+                                    value={sortValues.completed}
+                                    onChange={(value) => handleSortChange('completed', value)}
+                                    className="w-40"
+                                >
+                                    <SelectItem value="desc">Descending</SelectItem>
+                                    <SelectItem value="asc">Ascending</SelectItem>
+                                </SelectInput>
+                            </div>
+                        }
                     >
-                        {/* Search Bar and Sort Filter */}
-                        <div className="mb-4 flex gap-4">
-                            <PrimaryInput
-                                type="text"
-                                placeholder="Search by name, assignee, division, or last action..."
-                                value={searchValues.completed}
-                                onChange={(e) => handleSearchChange('completed', e.target.value)}
-                                className="flex-1"
-                            />
-                            <SelectInput
-                                placeholder="Sort Order"
-                                value={sortValues.completed}
-                                onChange={(value) => handleSortChange('completed', value)}
-                                className="w-40"
-                            >
-                                <SelectItem value="desc">Descending</SelectItem>
-                                <SelectItem value="asc">Ascending</SelectItem>
-                            </SelectInput>
-                        </div>
                         <Table
                             thead={TABLE_COMPLETED_HEAD}
                             tbody={TABLE_COMPLETED_TBODY}
                         />
                         {completed_data?.links && (
                             <div className="mt-4">
-                                <Pagination 
+                                <Pagination
                                     links={completed_data.links}
                                     current_page={completed_data.current_page}
                                     per_page={completed_data.per_page}
