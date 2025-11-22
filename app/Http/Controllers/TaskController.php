@@ -15,30 +15,56 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $divisions = Division::all();
         $employees = Employee::orderBy('last_name', 'asc')->get();
 
+        // Get page numbers for each table separately
+        $notStartedPage = $request->get('not_started_page', 1);
+        $inProgressPage = $request->get('in_progress_page', 1);
+        $completedPage = $request->get('completed_page', 1);
+
         $notStarted = Task::with('division', 'employee')
             ->where('status', 'not_started')
             ->orderBy('created_at', 'desc')
-            ->paginate(7);
+            ->paginate(7, ['*'], 'not_started_page', $notStartedPage);
         $inProgress = Task::with('division', 'employee')
             ->where('status', 'in_progress')
             ->orderBy('created_at', 'desc')
-            ->paginate(7);
+            ->paginate(7, ['*'], 'in_progress_page', $inProgressPage);
         $completed = Task::with('division', 'employee')
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')
-            ->paginate(7);
+            ->paginate(7, ['*'], 'completed_page', $completedPage);
 
         return Inertia::render('Task', [
             'divisions_data' => $divisions,
             'employees_data' => $employees,
-            'notStarted_data' => TaskResource::collection($notStarted),
-            'inProgress_data' => TaskResource::collection($inProgress),
-            'completed_data' => TaskResource::collection($completed),
+            'notStarted_data' => [
+                'data' => TaskResource::collection($notStarted->items())->resolve(),
+                'links' => $notStarted->linkCollection()->toArray(),
+                'current_page' => $notStarted->currentPage(),
+                'last_page' => $notStarted->lastPage(),
+                'per_page' => $notStarted->perPage(),
+                'total' => $notStarted->total(),
+            ],
+            'inProgress_data' => [
+                'data' => TaskResource::collection($inProgress->items())->resolve(),
+                'links' => $inProgress->linkCollection()->toArray(),
+                'current_page' => $inProgress->currentPage(),
+                'last_page' => $inProgress->lastPage(),
+                'per_page' => $inProgress->perPage(),
+                'total' => $inProgress->total(),
+            ],
+            'completed_data' => [
+                'data' => TaskResource::collection($completed->items())->resolve(),
+                'links' => $completed->linkCollection()->toArray(),
+                'current_page' => $completed->currentPage(),
+                'last_page' => $completed->lastPage(),
+                'per_page' => $completed->perPage(),
+                'total' => $completed->total(),
+            ],
         ]);
     }
 

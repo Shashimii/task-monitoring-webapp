@@ -19,6 +19,7 @@ import Badge from '@/Components/Misc/Badge';
 import DateContainer from '@/Components/Misc/DateContainer';
 import StatusContainer from '@/Components/Misc/StatusContainer';
 import DivisionContainer from '@/Components/Misc/DivisionContainer';
+import Pagination from '@/Components/Misc/Pagination';
 import ModalPrimary from '@/Components/Button/ModalPrimary';
 import ModalSecondary from '@/Components/Button/ModalSecondary';
 
@@ -33,6 +34,21 @@ export default function Task({ divisions_data, employees_data }) {
     } = props;
 
     console.log(notStarted_data);
+
+    // Helper function to safely get array from paginated data
+    const getDataArray = (data) => {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        if (data.data) {
+            const dataArray = data.data;
+            if (Array.isArray(dataArray)) return dataArray;
+            // If it's an object, convert to array
+            if (typeof dataArray === 'object') {
+                return Object.values(dataArray);
+            }
+        }
+        return [];
+    };
 
     // console.log(inProgress_data)
 
@@ -225,7 +241,7 @@ export default function Task({ divisions_data, employees_data }) {
     )
     const TABLE_NOT_STARTED_TBODY = (
         <>
-            {(notStarted_data?.data || notStarted_data || []).map(task => {
+            {getDataArray(notStarted_data).map(task => {
                 const isEditing = editingTaskId === task.id
                 return (
                     <TableRow key={task.id}>
@@ -459,7 +475,7 @@ export default function Task({ divisions_data, employees_data }) {
     )
     const TABLE_TODO_TBODY = (
         <>
-            {(inProgress_data?.data || inProgress_data || []).map(task => {
+            {getDataArray(inProgress_data).map(task => {
                 const isEditing = editingTaskId === task.id
                 return (
                     <TableRow key={task.id}>
@@ -693,7 +709,7 @@ export default function Task({ divisions_data, employees_data }) {
     )
     const TABLE_COMPLETED_TBODY = (
         <>
-            {(completed_data?.data || completed_data || []).map(task => {
+            {getDataArray(completed_data).map(task => {
                 const isEditing = editingTaskId === task.id
                 return (
                     <TableRow key={task.id}>
@@ -1017,17 +1033,41 @@ export default function Task({ divisions_data, employees_data }) {
                             thead={TABLE_NOT_STARTED_HEAD}
                             tbody={TABLE_NOT_STARTED_TBODY}
                         />
+                        {notStarted_data?.links && (
+                            <div className="mt-4">
+                                <Pagination 
+                                    links={notStarted_data.links}
+                                    current_page={notStarted_data.current_page}
+                                    per_page={notStarted_data.per_page}
+                                    total={notStarted_data.total}
+                                    last_page={notStarted_data.last_page}
+                                    tableType="not_started"
+                                />
+                            </div>
+                        )}
                     </TableContainer>
 
-                    <TableContainer
-                        tableTitle="IN PROGRESS"
+                <TableContainer
+                    tableTitle="IN PROGRESS"
                         borderColor="border-orange-500"
-                    >
-                        <Table
-                            thead={TABLE_TODO_HEAD}
-                            tbody={TABLE_TODO_TBODY}
-                        />
-                    </TableContainer>
+                >
+                    <Table
+                        thead={TABLE_TODO_HEAD}
+                        tbody={TABLE_TODO_TBODY}
+                    />
+                    {inProgress_data?.links && (
+                        <div className="mt-4">
+                            <Pagination 
+                                links={inProgress_data.links}
+                                current_page={inProgress_data.current_page}
+                                per_page={inProgress_data.per_page}
+                                total={inProgress_data.total}
+                                last_page={inProgress_data.last_page}
+                                tableType="in_progress"
+                            />
+                        </div>
+                    )}
+                </TableContainer>
 
                     <TableContainer
                         tableTitle="COMPLETED"
@@ -1037,6 +1077,18 @@ export default function Task({ divisions_data, employees_data }) {
                             thead={TABLE_COMPLETED_HEAD}
                             tbody={TABLE_COMPLETED_TBODY}
                         />
+                        {completed_data?.links && (
+                            <div className="mt-4">
+                                <Pagination 
+                                    links={completed_data.links}
+                                    current_page={completed_data.current_page}
+                                    per_page={completed_data.per_page}
+                                    total={completed_data.total}
+                                    last_page={completed_data.last_page}
+                                    tableType="completed"
+                                />
+                            </div>
+                        )}
                     </TableContainer>
                 </div>
             </MainContainer>
