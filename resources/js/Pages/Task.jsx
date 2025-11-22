@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Head, useForm, usePage, router } from "@inertiajs/react";
 import { SelectItem } from "@/components/ui/select"
 import { toast } from 'sonner';
@@ -24,7 +24,7 @@ import ModalPrimary from '@/Components/Button/ModalPrimary';
 import ModalSecondary from '@/Components/Button/ModalSecondary';
 
 
-export default function Task({ divisions_data, employees_data }) {
+export default function Task({ divisions_data, employees_data, search_params = {} }) {
     // Data
     const { props } = usePage();
     const {
@@ -34,6 +34,83 @@ export default function Task({ divisions_data, employees_data }) {
     } = props;
 
     console.log(notStarted_data);
+
+    // Search state for each table
+    const [searchValues, setSearchValues] = useState({
+        not_started: search_params.not_started_search || '',
+        in_progress: search_params.in_progress_search || '',
+        completed: search_params.completed_search || '',
+    });
+
+    // Debounced search values
+    const [debouncedSearch, setDebouncedSearch] = useState(searchValues);
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchValues);
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [searchValues]);
+
+    // Track if component has mounted to avoid initial search
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Handle search when debounced value changes
+    useEffect(() => {
+        if (!isMounted) return; // Don't search on initial mount
+
+        const performSearch = () => {
+            // Get current URL params to preserve other table states
+            const currentParams = new URLSearchParams(window.location.search);
+            const params = {};
+
+            // Preserve all table page parameters
+            ['not_started_page', 'in_progress_page', 'completed_page'].forEach(param => {
+                const value = currentParams.get(param);
+                if (value) params[param] = value;
+            });
+
+            // Set search parameters for each table
+            Object.entries(debouncedSearch).forEach(([tableType, value]) => {
+                if (value && value.trim() !== '') {
+                    params[`${tableType}_search`] = value;
+                    // Reset to page 1 when searching
+                    params[`${tableType}_page`] = 1;
+                } else {
+                    // Remove search param if empty
+                    delete params[`${tableType}_search`];
+                }
+            });
+
+            // Remove undefined values
+            Object.keys(params).forEach(key => {
+                if (params[key] === undefined || params[key] === '') {
+                    delete params[key];
+                }
+            });
+
+            router.get(route('task.index'), params, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        };
+
+        performSearch();
+    }, [debouncedSearch, isMounted]);
+
+    // Handle search input change
+    const handleSearchChange = (tableType, value) => {
+        setSearchValues(prev => ({
+            ...prev,
+            [tableType]: value
+        }));
+    };
 
     // Helper function to safely get array from paginated data
     const getDataArray = (data) => {
@@ -1029,6 +1106,16 @@ export default function Task({ divisions_data, employees_data }) {
                         tableTitle="NOT STARTED"
                         borderColor="border-gray-500"
                     >
+                        {/* Search Bar */}
+                        <div className="mb-4">
+                            <PrimaryInput
+                                type="text"
+                                placeholder="Search by name, assignee, division, or last action..."
+                                value={searchValues.not_started}
+                                onChange={(e) => handleSearchChange('not_started', e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
                         <Table
                             thead={TABLE_NOT_STARTED_HEAD}
                             tbody={TABLE_NOT_STARTED_TBODY}
@@ -1051,6 +1138,16 @@ export default function Task({ divisions_data, employees_data }) {
                     tableTitle="IN PROGRESS"
                         borderColor="border-orange-500"
                 >
+                    {/* Search Bar */}
+                    <div className="mb-4">
+                            <PrimaryInput
+                                type="text"
+                                placeholder="Search by name, assignee, division, or last action..."
+                                value={searchValues.in_progress}
+                                onChange={(e) => handleSearchChange('in_progress', e.target.value)}
+                                className="w-full"
+                            />
+                    </div>
                     <Table
                         thead={TABLE_TODO_HEAD}
                         tbody={TABLE_TODO_TBODY}
@@ -1073,6 +1170,16 @@ export default function Task({ divisions_data, employees_data }) {
                         tableTitle="COMPLETED"
                         borderColor="border-green-500"
                     >
+                        {/* Search Bar */}
+                        <div className="mb-4">
+                            <PrimaryInput
+                                type="text"
+                                placeholder="Search by name, assignee, division, or last action..."
+                                value={searchValues.completed}
+                                onChange={(e) => handleSearchChange('completed', e.target.value)}
+                                className="w-full"
+                            />
+                        </div>
                         <Table
                             thead={TABLE_COMPLETED_HEAD}
                             tbody={TABLE_COMPLETED_TBODY}

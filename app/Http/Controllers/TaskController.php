@@ -25,18 +25,49 @@ class TaskController extends Controller
         $inProgressPage = $request->get('in_progress_page', 1);
         $completedPage = $request->get('completed_page', 1);
 
-        $notStarted = Task::with('division', 'employee')
-            ->where('status', 'not_started')
-            ->orderBy('created_at', 'desc')
-            ->paginate(7, ['*'], 'not_started_page', $notStartedPage);
-        $inProgress = Task::with('division', 'employee')
-            ->where('status', 'in_progress')
-            ->orderBy('created_at', 'desc')
-            ->paginate(7, ['*'], 'in_progress_page', $inProgressPage);
-        $completed = Task::with('division', 'employee')
-            ->where('status', 'completed')
-            ->orderBy('created_at', 'desc')
-            ->paginate(7, ['*'], 'completed_page', $completedPage);
+        // Get search parameters for each table
+        $notStartedSearch = $request->get('not_started_search', '');
+        $inProgressSearch = $request->get('in_progress_search', '');
+        $completedSearch = $request->get('completed_search', '');
+
+        // Helper function to apply search
+        $applySearch = function($query, $search) {
+            if (!empty($search)) {
+                $query->where(function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('last_action', 'like', '%' . $search . '%')
+                      ->orWhereHas('employee', function($empQuery) use ($search) {
+                          $empQuery->where('first_name', 'like', '%' . $search . '%')
+                                   ->orWhere('last_name', 'like', '%' . $search . '%');
+                      })
+                      ->orWhereHas('division', function($divQuery) use ($search) {
+                          $divQuery->where('division_name', 'like', '%' . $search . '%');
+                      });
+                });
+            }
+            return $query;
+        };
+
+        $notStarted = $applySearch(
+            Task::with('division', 'employee')
+                ->where('status', 'not_started')
+                ->orderBy('created_at', 'desc'),
+            $notStartedSearch
+        )->paginate(7, ['*'], 'not_started_page', $notStartedPage);
+
+        $inProgress = $applySearch(
+            Task::with('division', 'employee')
+                ->where('status', 'in_progress')
+                ->orderBy('created_at', 'desc'),
+            $inProgressSearch
+        )->paginate(7, ['*'], 'in_progress_page', $inProgressPage);
+
+        $completed = $applySearch(
+            Task::with('division', 'employee')
+                ->where('status', 'completed')
+                ->orderBy('created_at', 'desc'),
+            $completedSearch
+        )->paginate(7, ['*'], 'completed_page', $completedPage);
 
         return Inertia::render('Task', [
             'divisions_data' => $divisions,
@@ -64,6 +95,11 @@ class TaskController extends Controller
                 'last_page' => $completed->lastPage(),
                 'per_page' => $completed->perPage(),
                 'total' => $completed->total(),
+            ],
+            'search_params' => [
+                'not_started_search' => $notStartedSearch,
+                'in_progress_search' => $inProgressSearch,
+                'completed_search' => $completedSearch,
             ],
         ]);
     }
