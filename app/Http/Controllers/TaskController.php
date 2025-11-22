@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\TaskResource;
+use App\Models\Activity;
 use App\Models\Division;
 use App\Models\Employee;
 use App\Models\Task;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class TaskController extends Controller
@@ -162,6 +164,15 @@ class TaskController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
+        // Log activity
+        Activity::create([
+            'action' => 'created',
+            'model_type' => Task::class,
+            'model_id' => $task->id,
+            'description' => "Task '{$task->name}' was created",
+            'user_id' => Auth::id(),
+        ]);
+
         return back()->with('success', 'Task added successfully!');
     }
 
@@ -205,6 +216,9 @@ class TaskController extends Controller
             ? intval($validated['division'])
             : null;
 
+        // Get original values for change tracking
+        $original = $task->getOriginal();
+
         $task->update([
             'name' => $validated['task_name'],
             'employee_id' => $employeeId,
@@ -216,6 +230,26 @@ class TaskController extends Controller
             'description' => $validated['description'] ?? null,
         ]);
 
+        // Track changes
+        $changes = [];
+        $task->refresh();
+        foreach ($task->getDirty() as $key => $value) {
+            $changes[$key] = [
+                'from' => $original[$key] ?? null,
+                'to' => $value,
+            ];
+        }
+
+        // Log activity
+        Activity::create([
+            'action' => 'updated',
+            'model_type' => Task::class,
+            'model_id' => $task->id,
+            'description' => "Task '{$task->name}' was updated",
+            'changes' => !empty($changes) ? $changes : null,
+            'user_id' => Auth::id(),
+        ]);
+
         return back()->with('success', 'Task updated successfully!');
     }
 
@@ -224,7 +258,19 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        $taskName = $task->name;
+        $taskId = $task->id;
+
         $task->delete();
+
+        // Log activity
+        Activity::create([
+            'action' => 'deleted',
+            'model_type' => Task::class,
+            'model_id' => $taskId,
+            'description' => "Task '{$taskName}' was deleted",
+            'user_id' => Auth::id(),
+        ]);
 
         return redirect()->route('task.index')->with('success', 'Task deleted!');
     }
