@@ -69,8 +69,10 @@ export default function Login() {
                                 employees only.
                             </p>
                         </form>
-                        <div className="mt-60 flex items-center justify-center">
+                        <div className="mt-60 flex items-center justify-center gap-3">
                             <span className="text-green-600 font-semibold dark:text-green-400"> © DENR NCR 2025</span>
+                            <span className="text-green-600 font-semibold dark:text-green-400">|</span>
+                            <span className="text-green-600 font-semibold dark:text-green-400">v0.8</span>
                         </div>
                     </div>
                 </div>
