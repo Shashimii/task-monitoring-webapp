@@ -21,7 +21,7 @@ class DashboardController extends Controller
         // Recent tasks (last 10)
         $recentTasks = Task::with('division', 'employee')
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(5)
             ->get();
 
         // Tasks by division
