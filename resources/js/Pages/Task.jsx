@@ -34,8 +34,6 @@ export default function Task({ divisions_data, employees_data, search_params = {
         completed_data = [],
     } = props;
 
-    console.log(notStarted_data);
-
     // Search state for each table
     const [searchValues, setSearchValues] = useState({
         not_started: search_params.not_started_search || '',
@@ -550,7 +548,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                             </TableData>
                             <TableData>
                                 {!isEditing && (
-                                    <DivisionContainer bgcolor={task.divisionBg}>
+                                    <DivisionContainer bgcolor={task?.division?.division_color}>
                                         {task?.division?.division_name}
                                     </DivisionContainer>
                                 )}
@@ -850,7 +848,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                             </TableData>
                             <TableData>
                                 {!isEditing && (
-                                    <DivisionContainer bgcolor={task.divisionBg}>
+                                    <DivisionContainer bgcolor={task?.division?.division_color}>
                                         {task?.division?.division_name}
                                     </DivisionContainer>
                                 )}
@@ -1150,7 +1148,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                             </TableData>
                             <TableData>
                                 {!isEditing && (
-                                    <DivisionContainer bgcolor={task.divisionBg}>
+                                    <DivisionContainer bgcolor={task?.division?.division_color}>
                                         {task?.division?.division_name}
                                     </DivisionContainer>
                                 )}

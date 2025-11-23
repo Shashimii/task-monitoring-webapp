@@ -42,6 +42,7 @@ class TaskResource extends JsonResource
             'division' => $this->division ? [
                 'id' => $this->division->id,
                 'division_name' => $this->division->division_name,
+                'division_color' => $this->division->division_color,
             ] : null,
 
             'employee' => $this->employee ? [
