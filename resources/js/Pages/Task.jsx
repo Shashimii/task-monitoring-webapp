@@ -267,6 +267,94 @@ export default function Task({ divisions_data, employees_data, search_params = {
     // -Edit Task Form State (store edit data for each task)
     const [editTaskData, setEditTaskData] = useState({})
 
+    // -Accordion State (track which rows are expanded)
+    const [expandedRows, setExpandedRows] = useState(new Set())
+
+    // Toggle accordion for a task
+    const toggleAccordion = (taskId) => {
+        setExpandedRows(prev => {
+            const newSet = new Set(prev)
+            if (newSet.has(taskId)) {
+                newSet.delete(taskId)
+            } else {
+                newSet.add(taskId)
+            }
+            return newSet
+        })
+    }
+
+    // -Description Editing State
+    const [editingDescriptionId, setEditingDescriptionId] = useState(null)
+    const [descriptionEditValue, setDescriptionEditValue] = useState('')
+
+    // Start editing description
+    const startEditingDescription = (task) => {
+        setDescriptionEditValue(task?.description || '')
+        setEditingDescriptionId(task.id)
+    }
+
+    // Cancel editing description
+    const cancelEditingDescription = () => {
+        setEditingDescriptionId(null)
+        setDescriptionEditValue('')
+    }
+
+    // Save description
+    const saveDescription = (taskId) => {
+        setUpdateTaskProcessing(true)
+        toast.loading("Updating description...")
+
+        let updateData = {}
+
+        // If task is already in main edit mode, merge with existing editTaskData
+        if (editingTaskId === taskId) {
+            updateData = {
+                ...editTaskData,
+                description: descriptionEditValue,
+            }
+        } else {
+            // If task is not in main edit mode, get current values from data
+            const task = [...getDataArray(notStarted_data), ...getDataArray(inProgress_data), ...getDataArray(completed_data)]
+                .find(t => t.id === taskId)
+            
+            if (task) {
+                updateData = {
+                    task_name: task.name,
+                    assignee: task?.employee?.id ? String(task.employee.id) : '',
+                    division: task?.division?.id ? String(task.division.id) : '',
+                    last_action: task.last_action || '',
+                    status: statusToDbValue(task.status || ''),
+                    priority: priorityToDbValue(task.priority || ''),
+                    due_date: task.due_date || '',
+                    description: descriptionEditValue,
+                }
+            } else {
+                toast.dismiss()
+                toast.error("Task not found")
+                setUpdateTaskProcessing(false)
+                return
+            }
+        }
+
+        router.put(route("task.update", taskId), updateData, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditingDescriptionId(null)
+                setDescriptionEditValue('')
+                setUpdateTaskProcessing(false)
+                toast.dismiss()
+                toast.success("Description updated!")
+            },
+            onError: (errors) => {
+                const messages = Object.values(errors).flat().join(" ")
+                setUpdateTaskProcessing(false)
+                toast.dismiss()
+                toast.error(messages || "Something went wrong.")
+            },
+        })
+    }
+
     // Convert display status to DB value
     const statusToDbValue = (displayStatus) => {
         const statusMap = {
@@ -374,197 +462,263 @@ export default function Task({ divisions_data, employees_data, search_params = {
         <>
             {getDataArray(notStarted_data).map(task => {
                 const isEditing = editingTaskId === task.id
+                const isExpanded = expandedRows.has(task.id)
                 return (
-                    <TableRow key={task.id}>
-                        <TableData>
-                            {!isEditing && (
-                                task?.name
-                            )}
-
-                            {isEditing && (
-                                <PrimaryInput
-                                    value={editTaskData.task_name || ''}
-                                    onChange={(e) => updateEditTaskData("task_name", e.target.value)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                task?.employee?.first_name + ' ' + task?.employee?.last_name
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    label=""
-                                    placeholder="Select Assignee"
-                                    defaultValue={editTaskData.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
-                                    onChange={(value) => updateEditTaskData("assignee", value)}
-                                >
-                                    {employees_data.map((employee) => (
-                                        <SelectItem key={employee.id} value={String(employee.id)}>
-                                            {employee.last_name} {employee.first_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <DivisionContainer bgcolor={task.divisionBg}>
-                                    {task?.division?.division_name}
-                                </DivisionContainer>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    label=""
-                                    placeholder="Select Division"
-                                    defaultValue={editTaskData.division || (task?.division?.id ? String(task.division.id) : undefined)}
-                                    onChange={(value) => updateEditTaskData("division", value)}
-                                >
-                                    {divisions_data.map((division) => (
-                                        <SelectItem key={division.id} value={String(division.id)}>
-                                            {division.division_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                task?.last_action
-                            )}
-
-                            {isEditing && (
-                                <PrimaryInput
-                                    value={editTaskData.last_action || ''}
-                                    onChange={(e) => updateEditTaskData("last_action", e.target.value)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <StatusContainer bgcolor={StatusColor(task?.status)}>
-                                    {task?.status}
-                                </StatusContainer>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    placeholder="Select Status"
-                                    defaultValue={editTaskData.status || statusToDbValue(task?.status || '')}
-                                    onChange={(value) => updateEditTaskData("status", value)}
-                                >
-                                    <SelectItem value="not_started">Not Started</SelectItem>
-                                    <SelectItem value="in_progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <DateContainer bgcolor={DateColor(task?.due_date)}>
-                                    {task?.due_date}
-                                </DateContainer>
-                            )}
-
-                            {isEditing && (
-                                <Datepicker
-                                    value={editTaskData.due_date || task?.due_date || ''}
-                                    onChange={(date) => updateEditTaskData("due_date", date)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <Badge bgcolor={PriorityColor(task?.priority)}>
-                                    {task?.priority}
-                                </Badge>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    placeholder="Select Priority"
-                                    defaultValue={editTaskData.priority || priorityToDbValue(task?.priority || '')}
-                                    onChange={(value) => updateEditTaskData("priority", value)}
-                                >
-                                    <SelectItem value="low">Low</SelectItem>
-                                    <SelectItem value="medium">Medium</SelectItem>
-                                    <SelectItem value="high">High</SelectItem>
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            <span className="flex gap-4">
+                    <>
+                        <TableRow 
+                            key={task.id}
+                            onClick={() => !isEditing && toggleAccordion(task.id)}
+                            className={!isEditing ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" : ""}
+                        >
+                            <TableData>
                                 {!isEditing && (
-                                    <button
-                                        className="cursor-pointer text-blue-400"
-                                        onClick={() => startEditing(task)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                        </svg>
-                                    </button>
+                                    task?.name
                                 )}
 
                                 {isEditing && (
-                                    <>
-                                        <button
-                                            className="cursor-pointer text-green-400"
-                                            onClick={() => {
-                                                if (!editTaskData.task_name || editTaskData.task_name.trim() === '') {
-                                                    toast.error("Task name is required")
-                                                    return
-                                                }
-
-                                                setUpdateTaskProcessing(true)
-                                                toast.loading("Updating task...")
-
-                                                router.put(route("task.update", task.id), editTaskData, {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                    onSuccess: () => {
-                                                        setEditingTaskId(null)
-                                                        setEditTaskData({})
-                                                        setUpdateTaskProcessing(false)
-                                                        toast.dismiss()
-                                                        toast.success("Task Updated!")
-                                                    },
-                                                    onError: (errors) => {
-                                                        const messages = Object.values(errors).flat().join(" ")
-                                                        setUpdateTaskProcessing(false)
-                                                        toast.dismiss()
-                                                        toast.error(messages || "Something went wrong.")
-                                                    },
-                                                })
-                                            }}
-                                            disabled={updateTaskProcessing}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            className="cursor-pointer text-blue-400"
-                                            onClick={cancelEditing}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </button>
-                                    </>
+                                    <PrimaryInput
+                                        value={editTaskData.task_name || ''}
+                                        onChange={(e) => updateEditTaskData("task_name", e.target.value)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    task?.employee?.first_name + ' ' + task?.employee?.last_name
                                 )}
 
-                                <button className="cursor-pointer text-red-400"
-                                    onClick={() => deleteTask(task.id)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
-                            </span>
-                        </TableData>
-                    </TableRow>
+                                {isEditing && (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Assignee"
+                                        defaultValue={editTaskData.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("assignee", value)}
+                                    >
+                                        {employees_data.map((employee) => (
+                                            <SelectItem key={employee.id} value={String(employee.id)}>
+                                                {employee.last_name} {employee.first_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <DivisionContainer bgcolor={task.divisionBg}>
+                                        {task?.division?.division_name}
+                                    </DivisionContainer>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Division"
+                                        defaultValue={editTaskData.division || (task?.division?.id ? String(task.division.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("division", value)}
+                                    >
+                                        {divisions_data.map((division) => (
+                                            <SelectItem key={division.id} value={String(division.id)}>
+                                                {division.division_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    task?.last_action
+                                )}
+
+                                {isEditing && (
+                                    <PrimaryInput
+                                        value={editTaskData.last_action || ''}
+                                        onChange={(e) => updateEditTaskData("last_action", e.target.value)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <StatusContainer bgcolor={StatusColor(task?.status)}>
+                                        {task?.status}
+                                    </StatusContainer>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        placeholder="Select Status"
+                                        defaultValue={editTaskData.status || statusToDbValue(task?.status || '')}
+                                        onChange={(value) => updateEditTaskData("status", value)}
+                                    >
+                                        <SelectItem value="not_started">Not Started</SelectItem>
+                                        <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <DateContainer bgcolor={DateColor(task?.due_date)}>
+                                        {task?.due_date}
+                                    </DateContainer>
+                                )}
+
+                                {isEditing && (
+                                    <Datepicker
+                                        value={editTaskData.due_date || task?.due_date || ''}
+                                        onChange={(date) => updateEditTaskData("due_date", date)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <Badge bgcolor={PriorityColor(task?.priority)}>
+                                        {task?.priority}
+                                    </Badge>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        placeholder="Select Priority"
+                                        defaultValue={editTaskData.priority || priorityToDbValue(task?.priority || '')}
+                                        onChange={(value) => updateEditTaskData("priority", value)}
+                                    >
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                <span className="flex gap-4" onClick={(e) => e.stopPropagation()}>
+                                    {!isEditing && (
+                                        <button
+                                            className="cursor-pointer text-blue-400"
+                                            onClick={() => startEditing(task)}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                        </button>
+                                    )}
+
+                                    {isEditing && (
+                                        <>
+                                            <button
+                                                className="cursor-pointer text-green-400"
+                                                onClick={() => {
+                                                    if (!editTaskData.task_name || editTaskData.task_name.trim() === '') {
+                                                        toast.error("Task name is required")
+                                                        return
+                                                    }
+
+                                                    setUpdateTaskProcessing(true)
+                                                    toast.loading("Updating task...")
+
+                                                    router.put(route("task.update", task.id), editTaskData, {
+                                                        preserveState: true,
+                                                        preserveScroll: true,
+                                                        onSuccess: () => {
+                                                            setEditingTaskId(null)
+                                                            setEditTaskData({})
+                                                            setUpdateTaskProcessing(false)
+                                                            toast.dismiss()
+                                                            toast.success("Task Updated!")
+                                                        },
+                                                        onError: (errors) => {
+                                                            const messages = Object.values(errors).flat().join(" ")
+                                                            setUpdateTaskProcessing(false)
+                                                            toast.dismiss()
+                                                            toast.error(messages || "Something went wrong.")
+                                                        },
+                                                    })
+                                                }}
+                                                disabled={updateTaskProcessing}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                className="cursor-pointer text-blue-400"
+                                                onClick={cancelEditing}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </button>
+                                        </>
+                                    )}
+
+                                    <button className="cursor-pointer text-red-400"
+                                        onClick={() => deleteTask(task.id)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </TableData>
+                        </TableRow>
+                        {isExpanded && !isEditing && (
+                            <TableRow key={`${task.id}-description`}>
+                                <TableData colSpan={8} className="bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="p-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="font-semibold text-gray-700 dark:text-gray-300">Description:</h4>
+                                            {editingDescriptionId !== task.id && (
+                                                <button
+                                                    className="text-blue-400 hover:text-blue-600 transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        startEditingDescription(task)
+                                                    }}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                        {editingDescriptionId === task.id ? (
+                                            <div className="space-y-3">
+                                                <TextareaInput
+                                                    value={descriptionEditValue}
+                                                    onChange={(e) => setDescriptionEditValue(e.target.value)}
+                                                    rows={4}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            saveDescription(task.id)
+                                                        }}
+                                                        disabled={updateTaskProcessing}
+                                                    >
+                                                        Save
+                                                    </button>
+                                                    <button
+                                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            cancelEditingDescription()
+                                                        }}
+                                                        disabled={updateTaskProcessing}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+                                                {task?.description || 'No description provided.'}
+                                            </p>
+                                        )}
+                                    </div>
+                                </TableData>
+                            </TableRow>
+                        )}
+                    </>
                 )
             })}
 
@@ -608,197 +762,263 @@ export default function Task({ divisions_data, employees_data, search_params = {
         <>
             {getDataArray(inProgress_data).map(task => {
                 const isEditing = editingTaskId === task.id
+                const isExpanded = expandedRows.has(task.id)
                 return (
-                    <TableRow key={task.id}>
-                        <TableData>
-                            {!isEditing && (
-                                task?.name
-                            )}
-
-                            {isEditing && (
-                                <PrimaryInput
-                                    value={editTaskData.task_name || ''}
-                                    onChange={(e) => updateEditTaskData("task_name", e.target.value)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                task?.employee?.first_name + ' ' + task?.employee?.last_name
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    label=""
-                                    placeholder="Select Assignee"
-                                    defaultValue={editTaskData.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
-                                    onChange={(value) => updateEditTaskData("assignee", value)}
-                                >
-                                    {employees_data.map((employee) => (
-                                        <SelectItem key={employee.id} value={String(employee.id)}>
-                                            {employee.last_name} {employee.first_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <DivisionContainer bgcolor={task.divisionBg}>
-                                    {task?.division?.division_name}
-                                </DivisionContainer>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    label=""
-                                    placeholder="Select Division"
-                                    defaultValue={editTaskData.division || (task?.division?.id ? String(task.division.id) : undefined)}
-                                    onChange={(value) => updateEditTaskData("division", value)}
-                                >
-                                    {divisions_data.map((division) => (
-                                        <SelectItem key={division.id} value={String(division.id)}>
-                                            {division.division_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                task?.last_action
-                            )}
-
-                            {isEditing && (
-                                <PrimaryInput
-                                    value={editTaskData.last_action || ''}
-                                    onChange={(e) => updateEditTaskData("last_action", e.target.value)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <StatusContainer bgcolor={StatusColor(task?.status)}>
-                                    {task?.status}
-                                </StatusContainer>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    placeholder="Select Status"
-                                    defaultValue={editTaskData.status || statusToDbValue(task?.status || '')}
-                                    onChange={(value) => updateEditTaskData("status", value)}
-                                >
-                                    <SelectItem value="not_started">Not Started</SelectItem>
-                                    <SelectItem value="in_progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <DateContainer bgcolor={DateColor(task?.due_date)}>
-                                    {task?.due_date}
-                                </DateContainer>
-                            )}
-
-                            {isEditing && (
-                                <Datepicker
-                                    value={editTaskData.due_date || task?.due_date || ''}
-                                    onChange={(date) => updateEditTaskData("due_date", date)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <Badge bgcolor={PriorityColor(task?.priority)}>
-                                    {task?.priority}
-                                </Badge>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    placeholder="Select Priority"
-                                    defaultValue={editTaskData.priority || priorityToDbValue(task?.priority || '')}
-                                    onChange={(value) => updateEditTaskData("priority", value)}
-                                >
-                                    <SelectItem value="low">Low</SelectItem>
-                                    <SelectItem value="medium">Medium</SelectItem>
-                                    <SelectItem value="high">High</SelectItem>
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            <span className="flex gap-4">
+                    <>
+                        <TableRow 
+                            key={task.id}
+                            onClick={() => !isEditing && toggleAccordion(task.id)}
+                            className={!isEditing ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" : ""}
+                        >
+                            <TableData>
                                 {!isEditing && (
-                                    <button
-                                        className="cursor-pointer text-blue-400"
-                                        onClick={() => startEditing(task)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                        </svg>
-                                    </button>
+                                    task?.name
                                 )}
 
                                 {isEditing && (
-                                    <>
-                                        <button
-                                            className="cursor-pointer text-green-400"
-                                            onClick={() => {
-                                                if (!editTaskData.task_name || editTaskData.task_name.trim() === '') {
-                                                    toast.error("Task name is required")
-                                                    return
-                                                }
-
-                                                setUpdateTaskProcessing(true)
-                                                toast.loading("Updating task...")
-
-                                                router.put(route("task.update", task.id), editTaskData, {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                    onSuccess: () => {
-                                                        setEditingTaskId(null)
-                                                        setEditTaskData({})
-                                                        setUpdateTaskProcessing(false)
-                                                        toast.dismiss()
-                                                        toast.success("Task Updated!")
-                                                    },
-                                                    onError: (errors) => {
-                                                        const messages = Object.values(errors).flat().join(" ")
-                                                        setUpdateTaskProcessing(false)
-                                                        toast.dismiss()
-                                                        toast.error(messages || "Something went wrong.")
-                                                    },
-                                                })
-                                            }}
-                                            disabled={updateTaskProcessing}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            className="cursor-pointer text-blue-400"
-                                            onClick={cancelEditing}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </button>
-                                    </>
+                                    <PrimaryInput
+                                        value={editTaskData.task_name || ''}
+                                        onChange={(e) => updateEditTaskData("task_name", e.target.value)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    task?.employee?.first_name + ' ' + task?.employee?.last_name
                                 )}
 
-                                <button className="cursor-pointer text-red-400"
-                                    onClick={() => deleteTask(task.id)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
-                            </span>
-                        </TableData>
-                    </TableRow>
+                                {isEditing && (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Assignee"
+                                        defaultValue={editTaskData.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("assignee", value)}
+                                    >
+                                        {employees_data.map((employee) => (
+                                            <SelectItem key={employee.id} value={String(employee.id)}>
+                                                {employee.last_name} {employee.first_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <DivisionContainer bgcolor={task.divisionBg}>
+                                        {task?.division?.division_name}
+                                    </DivisionContainer>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Division"
+                                        defaultValue={editTaskData.division || (task?.division?.id ? String(task.division.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("division", value)}
+                                    >
+                                        {divisions_data.map((division) => (
+                                            <SelectItem key={division.id} value={String(division.id)}>
+                                                {division.division_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    task?.last_action
+                                )}
+
+                                {isEditing && (
+                                    <PrimaryInput
+                                        value={editTaskData.last_action || ''}
+                                        onChange={(e) => updateEditTaskData("last_action", e.target.value)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <StatusContainer bgcolor={StatusColor(task?.status)}>
+                                        {task?.status}
+                                    </StatusContainer>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        placeholder="Select Status"
+                                        defaultValue={editTaskData.status || statusToDbValue(task?.status || '')}
+                                        onChange={(value) => updateEditTaskData("status", value)}
+                                    >
+                                        <SelectItem value="not_started">Not Started</SelectItem>
+                                        <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <DateContainer bgcolor={DateColor(task?.due_date)}>
+                                        {task?.due_date}
+                                    </DateContainer>
+                                )}
+
+                                {isEditing && (
+                                    <Datepicker
+                                        value={editTaskData.due_date || task?.due_date || ''}
+                                        onChange={(date) => updateEditTaskData("due_date", date)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <Badge bgcolor={PriorityColor(task?.priority)}>
+                                        {task?.priority}
+                                    </Badge>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        placeholder="Select Priority"
+                                        defaultValue={editTaskData.priority || priorityToDbValue(task?.priority || '')}
+                                        onChange={(value) => updateEditTaskData("priority", value)}
+                                    >
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                <span className="flex gap-4" onClick={(e) => e.stopPropagation()}>
+                                    {!isEditing && (
+                                        <button
+                                            className="cursor-pointer text-blue-400"
+                                            onClick={() => startEditing(task)}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                        </button>
+                                    )}
+
+                                    {isEditing && (
+                                        <>
+                                            <button
+                                                className="cursor-pointer text-green-400"
+                                                onClick={() => {
+                                                    if (!editTaskData.task_name || editTaskData.task_name.trim() === '') {
+                                                        toast.error("Task name is required")
+                                                        return
+                                                    }
+
+                                                    setUpdateTaskProcessing(true)
+                                                    toast.loading("Updating task...")
+
+                                                    router.put(route("task.update", task.id), editTaskData, {
+                                                        preserveState: true,
+                                                        preserveScroll: true,
+                                                        onSuccess: () => {
+                                                            setEditingTaskId(null)
+                                                            setEditTaskData({})
+                                                            setUpdateTaskProcessing(false)
+                                                            toast.dismiss()
+                                                            toast.success("Task Updated!")
+                                                        },
+                                                        onError: (errors) => {
+                                                            const messages = Object.values(errors).flat().join(" ")
+                                                            setUpdateTaskProcessing(false)
+                                                            toast.dismiss()
+                                                            toast.error(messages || "Something went wrong.")
+                                                        },
+                                                    })
+                                                }}
+                                                disabled={updateTaskProcessing}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                className="cursor-pointer text-blue-400"
+                                                onClick={cancelEditing}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </button>
+                                        </>
+                                    )}
+
+                                    <button className="cursor-pointer text-red-400"
+                                        onClick={() => deleteTask(task.id)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </TableData>
+                        </TableRow>
+                        {isExpanded && !isEditing && (
+                            <TableRow key={`${task.id}-description`}>
+                                <TableData colSpan={8} className="bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="p-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="font-semibold text-gray-700 dark:text-gray-300">Description:</h4>
+                                            {editingDescriptionId !== task.id && (
+                                                <button
+                                                    className="text-blue-400 hover:text-blue-600 transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        startEditingDescription(task)
+                                                    }}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                        {editingDescriptionId === task.id ? (
+                                            <div className="space-y-3">
+                                                <TextareaInput
+                                                    value={descriptionEditValue}
+                                                    onChange={(e) => setDescriptionEditValue(e.target.value)}
+                                                    rows={4}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            saveDescription(task.id)
+                                                        }}
+                                                        disabled={updateTaskProcessing}
+                                                    >
+                                                        Save
+                                                    </button>
+                                                    <button
+                                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            cancelEditingDescription()
+                                                        }}
+                                                        disabled={updateTaskProcessing}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+                                                {task?.description || 'No description provided.'}
+                                            </p>
+                                        )}
+                                    </div>
+                                </TableData>
+                            </TableRow>
+                        )}
+                    </>
                 )
             })}
 
@@ -842,197 +1062,263 @@ export default function Task({ divisions_data, employees_data, search_params = {
         <>
             {getDataArray(completed_data).map(task => {
                 const isEditing = editingTaskId === task.id
+                const isExpanded = expandedRows.has(task.id)
                 return (
-                    <TableRow key={task.id}>
-                        <TableData>
-                            {!isEditing && (
-                                task?.name
-                            )}
-
-                            {isEditing && (
-                                <PrimaryInput
-                                    value={editTaskData.task_name || ''}
-                                    onChange={(e) => updateEditTaskData("task_name", e.target.value)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                task?.employee?.first_name + ' ' + task?.employee?.last_name
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    label=""
-                                    placeholder="Select Assignee"
-                                    defaultValue={editTaskData.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
-                                    onChange={(value) => updateEditTaskData("assignee", value)}
-                                >
-                                    {employees_data.map((employee) => (
-                                        <SelectItem key={employee.id} value={String(employee.id)}>
-                                            {employee.last_name} {employee.first_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <DivisionContainer bgcolor={task.divisionBg}>
-                                    {task?.division?.division_name}
-                                </DivisionContainer>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    label=""
-                                    placeholder="Select Division"
-                                    defaultValue={editTaskData.division || (task?.division?.id ? String(task.division.id) : undefined)}
-                                    onChange={(value) => updateEditTaskData("division", value)}
-                                >
-                                    {divisions_data.map((division) => (
-                                        <SelectItem key={division.id} value={String(division.id)}>
-                                            {division.division_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                task?.last_action
-                            )}
-
-                            {isEditing && (
-                                <PrimaryInput
-                                    value={editTaskData.last_action || ''}
-                                    onChange={(e) => updateEditTaskData("last_action", e.target.value)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <StatusContainer bgcolor={StatusColor(task?.status)}>
-                                    {task?.status}
-                                </StatusContainer>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    placeholder="Select Status"
-                                    defaultValue={editTaskData.status || statusToDbValue(task?.status || '')}
-                                    onChange={(value) => updateEditTaskData("status", value)}
-                                >
-                                    <SelectItem value="not_started">Not Started</SelectItem>
-                                    <SelectItem value="in_progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <DateContainer bgcolor={DateColor(task?.due_date)}>
-                                    {task?.due_date}
-                                </DateContainer>
-                            )}
-
-                            {isEditing && (
-                                <Datepicker
-                                    value={editTaskData.due_date || task?.due_date || ''}
-                                    onChange={(date) => updateEditTaskData("due_date", date)}
-                                />
-                            )}
-                        </TableData>
-                        <TableData>
-                            {!isEditing && (
-                                <Badge bgcolor={PriorityColor(task?.priority)}>
-                                    {task?.priority}
-                                </Badge>
-                            )}
-
-                            {isEditing && (
-                                <SelectInput
-                                    placeholder="Select Priority"
-                                    defaultValue={editTaskData.priority || priorityToDbValue(task?.priority || '')}
-                                    onChange={(value) => updateEditTaskData("priority", value)}
-                                >
-                                    <SelectItem value="low">Low</SelectItem>
-                                    <SelectItem value="medium">Medium</SelectItem>
-                                    <SelectItem value="high">High</SelectItem>
-                                </SelectInput>
-                            )}
-                        </TableData>
-                        <TableData>
-                            <span className="flex gap-4">
+                    <>
+                        <TableRow 
+                            key={task.id}
+                            onClick={() => !isEditing && toggleAccordion(task.id)}
+                            className={!isEditing ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" : ""}
+                        >
+                            <TableData>
                                 {!isEditing && (
-                                    <button
-                                        className="cursor-pointer text-blue-400"
-                                        onClick={() => startEditing(task)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                        </svg>
-                                    </button>
+                                    task?.name
                                 )}
 
                                 {isEditing && (
-                                    <>
-                                        <button
-                                            className="cursor-pointer text-green-400"
-                                            onClick={() => {
-                                                if (!editTaskData.task_name || editTaskData.task_name.trim() === '') {
-                                                    toast.error("Task name is required")
-                                                    return
-                                                }
-
-                                                setUpdateTaskProcessing(true)
-                                                toast.loading("Updating task...")
-
-                                                router.put(route("task.update", task.id), editTaskData, {
-                                                    preserveState: true,
-                                                    preserveScroll: true,
-                                                    onSuccess: () => {
-                                                        setEditingTaskId(null)
-                                                        setEditTaskData({})
-                                                        setUpdateTaskProcessing(false)
-                                                        toast.dismiss()
-                                                        toast.success("Task Updated!")
-                                                    },
-                                                    onError: (errors) => {
-                                                        const messages = Object.values(errors).flat().join(" ")
-                                                        setUpdateTaskProcessing(false)
-                                                        toast.dismiss()
-                                                        toast.error(messages || "Something went wrong.")
-                                                    },
-                                                })
-                                            }}
-                                            disabled={updateTaskProcessing}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            className="cursor-pointer text-blue-400"
-                                            onClick={cancelEditing}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </button>
-                                    </>
+                                    <PrimaryInput
+                                        value={editTaskData.task_name || ''}
+                                        onChange={(e) => updateEditTaskData("task_name", e.target.value)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    task?.employee?.first_name + ' ' + task?.employee?.last_name
                                 )}
 
-                                <button className="cursor-pointer text-red-400"
-                                    onClick={() => deleteTask(task.id)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                    </svg>
-                                </button>
-                            </span>
-                        </TableData>
-                    </TableRow>
+                                {isEditing && (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Assignee"
+                                        defaultValue={editTaskData.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("assignee", value)}
+                                    >
+                                        {employees_data.map((employee) => (
+                                            <SelectItem key={employee.id} value={String(employee.id)}>
+                                                {employee.last_name} {employee.first_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <DivisionContainer bgcolor={task.divisionBg}>
+                                        {task?.division?.division_name}
+                                    </DivisionContainer>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Division"
+                                        defaultValue={editTaskData.division || (task?.division?.id ? String(task.division.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("division", value)}
+                                    >
+                                        {divisions_data.map((division) => (
+                                            <SelectItem key={division.id} value={String(division.id)}>
+                                                {division.division_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    task?.last_action
+                                )}
+
+                                {isEditing && (
+                                    <PrimaryInput
+                                        value={editTaskData.last_action || ''}
+                                        onChange={(e) => updateEditTaskData("last_action", e.target.value)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <StatusContainer bgcolor={StatusColor(task?.status)}>
+                                        {task?.status}
+                                    </StatusContainer>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        placeholder="Select Status"
+                                        defaultValue={editTaskData.status || statusToDbValue(task?.status || '')}
+                                        onChange={(value) => updateEditTaskData("status", value)}
+                                    >
+                                        <SelectItem value="not_started">Not Started</SelectItem>
+                                        <SelectItem value="in_progress">In Progress</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <DateContainer bgcolor={DateColor(task?.due_date)}>
+                                        {task?.due_date}
+                                    </DateContainer>
+                                )}
+
+                                {isEditing && (
+                                    <Datepicker
+                                        value={editTaskData.due_date || task?.due_date || ''}
+                                        onChange={(date) => updateEditTaskData("due_date", date)}
+                                    />
+                                )}
+                            </TableData>
+                            <TableData>
+                                {!isEditing && (
+                                    <Badge bgcolor={PriorityColor(task?.priority)}>
+                                        {task?.priority}
+                                    </Badge>
+                                )}
+
+                                {isEditing && (
+                                    <SelectInput
+                                        placeholder="Select Priority"
+                                        defaultValue={editTaskData.priority || priorityToDbValue(task?.priority || '')}
+                                        onChange={(value) => updateEditTaskData("priority", value)}
+                                    >
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                    </SelectInput>
+                                )}
+                            </TableData>
+                            <TableData>
+                                <span className="flex gap-4" onClick={(e) => e.stopPropagation()}>
+                                    {!isEditing && (
+                                        <button
+                                            className="cursor-pointer text-blue-400"
+                                            onClick={() => startEditing(task)}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                            </svg>
+                                        </button>
+                                    )}
+
+                                    {isEditing && (
+                                        <>
+                                            <button
+                                                className="cursor-pointer text-green-400"
+                                                onClick={() => {
+                                                    if (!editTaskData.task_name || editTaskData.task_name.trim() === '') {
+                                                        toast.error("Task name is required")
+                                                        return
+                                                    }
+
+                                                    setUpdateTaskProcessing(true)
+                                                    toast.loading("Updating task...")
+
+                                                    router.put(route("task.update", task.id), editTaskData, {
+                                                        preserveState: true,
+                                                        preserveScroll: true,
+                                                        onSuccess: () => {
+                                                            setEditingTaskId(null)
+                                                            setEditTaskData({})
+                                                            setUpdateTaskProcessing(false)
+                                                            toast.dismiss()
+                                                            toast.success("Task Updated!")
+                                                        },
+                                                        onError: (errors) => {
+                                                            const messages = Object.values(errors).flat().join(" ")
+                                                            setUpdateTaskProcessing(false)
+                                                            toast.dismiss()
+                                                            toast.error(messages || "Something went wrong.")
+                                                        },
+                                                    })
+                                                }}
+                                                disabled={updateTaskProcessing}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                className="cursor-pointer text-blue-400"
+                                                onClick={cancelEditing}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+                                            </button>
+                                        </>
+                                    )}
+
+                                    <button className="cursor-pointer text-red-400"
+                                        onClick={() => deleteTask(task.id)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </TableData>
+                        </TableRow>
+                        {isExpanded && !isEditing && (
+                            <TableRow key={`${task.id}-description`}>
+                                <TableData colSpan={8} className="bg-gray-50 dark:bg-gray-800/50">
+                                    <div className="p-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="font-semibold text-gray-700 dark:text-gray-300">Description:</h4>
+                                            {editingDescriptionId !== task.id && (
+                                                <button
+                                                    className="text-blue-400 hover:text-blue-600 transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        startEditingDescription(task)
+                                                    }}
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                                    </svg>
+                                                </button>
+                                            )}
+                                        </div>
+                                        {editingDescriptionId === task.id ? (
+                                            <div className="space-y-3">
+                                                <TextareaInput
+                                                    value={descriptionEditValue}
+                                                    onChange={(e) => setDescriptionEditValue(e.target.value)}
+                                                    rows={4}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            saveDescription(task.id)
+                                                        }}
+                                                        disabled={updateTaskProcessing}
+                                                    >
+                                                        Save
+                                                    </button>
+                                                    <button
+                                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            cancelEditingDescription()
+                                                        }}
+                                                        disabled={updateTaskProcessing}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+                                                {task?.description || 'No description provided.'}
+                                            </p>
+                                        )}
+                                    </div>
+                                </TableData>
+                            </TableRow>
+                        )}
+                    </>
                 )
             })}
 
