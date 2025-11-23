@@ -472,6 +472,290 @@ export default function Task({ divisions_data, employees_data, search_params = {
         });
     };
 
+    // -Mobile Card Component
+    const TaskCard = ({ task, tableType }) => {
+        const isEditing = editingTaskId === task.id
+        const isExpanded = expandedRows.has(task.id)
+
+        return (
+            <div className="mb-6">
+                <div 
+                    className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 ${!isEditing ? "cursor-pointer hover:shadow-xl transition-all duration-200" : ""}`}
+                    onClick={() => !isEditing && toggleAccordion(task.id)}
+                >
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between mb-5">
+                        <div className="flex-1 pr-3">
+                            {!isEditing ? (
+                                <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-3 leading-tight">
+                                    {task?.name}
+                                </h3>
+                            ) : (
+                                <div className="mb-3">
+                                    <PrimaryInput
+                                        value={editTaskData.task_name || ''}
+                                        onChange={(e) => updateEditTaskData("task_name", e.target.value)}
+                                    />
+                                </div>
+                            )}
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <StatusContainer bgcolor={StatusColor(task?.status)}>
+                                    {task?.status}
+                                </StatusContainer>
+                                <Badge bgcolor={PriorityColor(task?.priority)}>
+                                    {task?.priority}
+                                </Badge>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            {!isEditing && (
+                                <button
+                                    className="cursor-pointer text-blue-500 hover:text-blue-700 p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                    onClick={() => startEditing(task)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                    </svg>
+                                </button>
+                            )}
+                            {isEditing && (
+                                <>
+                                    <button
+                                        className="cursor-pointer text-green-500 hover:text-green-700 p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                        onClick={() => {
+                                            if (!editTaskData.task_name || editTaskData.task_name.trim() === '') {
+                                                toast.error("Task name is required")
+                                                return
+                                            }
+                                            setUpdateTaskProcessing(true)
+                                            toast.loading("Updating task...")
+                                            router.put(route("task.update", task.id), prepareTaskDataForSave(editTaskData), {
+                                                preserveState: true,
+                                                preserveScroll: true,
+                                                onSuccess: () => {
+                                                    setEditingTaskId(null)
+                                                    setEditTaskData({})
+                                                    setUpdateTaskProcessing(false)
+                                                    toast.dismiss()
+                                                    toast.success("Task Updated!")
+                                                },
+                                                onError: (errors) => {
+                                                    const messages = Object.values(errors).flat().join(" ")
+                                                    setUpdateTaskProcessing(false)
+                                                    toast.dismiss()
+                                                    toast.error(messages || "Something went wrong.")
+                                                },
+                                            })
+                                        }}
+                                        disabled={updateTaskProcessing}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        className="cursor-pointer text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                        onClick={cancelEditing}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                    </button>
+                                </>
+                            )}
+                            <button 
+                                className="cursor-pointer text-red-500 hover:text-red-700 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                onClick={() => deleteTask(task.id)}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="space-y-4 text-base">
+                        <div className="flex items-center gap-4 py-1">
+                            <span className="font-semibold text-gray-700 dark:text-gray-300 w-32 flex-shrink-0 text-sm">Assignee:</span>
+                            <div className="flex-1 min-w-0">
+                                {!isEditing ? (
+                                    <span className="text-gray-800 dark:text-gray-200 break-words block font-medium">
+                                        {task?.employee?.first_name + ' ' + task?.employee?.last_name || 'N/A'}
+                                    </span>
+                                ) : (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Assignee"
+                                        defaultValue={editTaskData.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("assignee", value)}
+                                        className="w-full"
+                                    >
+                                        {employees_data.map((employee) => (
+                                            <SelectItem key={employee.id} value={String(employee.id)}>
+                                                {employee.last_name} {employee.first_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 py-1">
+                            <span className="font-semibold text-gray-700 dark:text-gray-300 w-32 flex-shrink-0 text-sm">Division:</span>
+                            <div className="flex-1 min-w-0">
+                                {!isEditing ? (
+                                    <DivisionContainer bgcolor={task?.division?.division_color}>
+                                        {task?.division?.division_name || 'N/A'}
+                                    </DivisionContainer>
+                                ) : (
+                                    <SelectInput
+                                        label=""
+                                        placeholder="Select Division"
+                                        defaultValue={editTaskData.division || (task?.division?.id ? String(task.division.id) : undefined)}
+                                        onChange={(value) => updateEditTaskData("division", value)}
+                                        className="w-full"
+                                    >
+                                        {divisions_data.map((division) => (
+                                            <SelectItem key={division.id} value={String(division.id)}>
+                                                {division.division_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectInput>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 py-1">
+                            <span className="font-semibold text-gray-700 dark:text-gray-300 w-32 flex-shrink-0 text-sm">Last Action:</span>
+                            <div className="flex-1 min-w-0">
+                                {!isEditing ? (
+                                    <span className="text-gray-800 dark:text-gray-200 break-words block font-medium">
+                                        {task?.last_action || 'N/A'}
+                                    </span>
+                                ) : (
+                                    <PrimaryInput
+                                        value={editTaskData.last_action || ''}
+                                        onChange={(e) => updateEditTaskData("last_action", e.target.value)}
+                                        className="w-full"
+                                    />
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 py-1">
+                            <span className="font-semibold text-gray-700 dark:text-gray-300 w-32 flex-shrink-0 text-sm">Due Date:</span>
+                            <div className="flex-1 min-w-0">
+                                {!isEditing ? (
+                                    <DateContainer bgcolor={DateColor(task?.due_date)}>
+                                        {task?.due_date || 'N/A'}
+                                    </DateContainer>
+                                ) : (
+                                    <Datepicker
+                                        value={editTaskData.due_date || task?.due_date || ''}
+                                        onChange={(date) => updateEditTaskData("due_date", date)}
+                                    />
+                                )}
+                            </div>
+                        </div>
+
+                        {isEditing && (
+                            <>
+                                <div className="flex items-center gap-4 py-1">
+                                    <span className="font-semibold text-gray-700 dark:text-gray-300 w-32 flex-shrink-0 text-sm">Status:</span>
+                                    <div className="flex-1 min-w-0">
+                                        <SelectInput
+                                            placeholder="Select Status"
+                                            defaultValue={editTaskData.status || statusToDbValue(task?.status || '')}
+                                            onChange={(value) => updateEditTaskData("status", value)}
+                                            className="w-full"
+                                        >
+                                            <SelectItem value="not_started">Not Started</SelectItem>
+                                            <SelectItem value="in_progress">In Progress</SelectItem>
+                                            <SelectItem value="completed">Completed</SelectItem>
+                                        </SelectInput>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 py-1">
+                                    <span className="font-semibold text-gray-700 dark:text-gray-300 w-32 flex-shrink-0 text-sm">Priority:</span>
+                                    <div className="flex-1 min-w-0">
+                                        <SelectInput
+                                            placeholder="Select Priority"
+                                            defaultValue={editTaskData.priority || priorityToDbValue(task?.priority || '')}
+                                            onChange={(value) => updateEditTaskData("priority", value)}
+                                            className="w-full"
+                                        >
+                                            <SelectItem value="low">Low</SelectItem>
+                                            <SelectItem value="medium">Medium</SelectItem>
+                                            <SelectItem value="high">High</SelectItem>
+                                        </SelectInput>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Expanded Description */}
+                    {isExpanded && !isEditing && (
+                        <div className="mt-6 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="font-bold text-lg text-gray-700 dark:text-gray-300">Description:</h4>
+                                {editingDescriptionId !== task.id && (
+                                    <button
+                                        className="text-blue-400 hover:text-blue-600 transition-colors"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            startEditingDescription(task)
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+                            {editingDescriptionId === task.id ? (
+                                <div className="space-y-4">
+                                    <TextareaInput
+                                        value={descriptionEditValue}
+                                        onChange={(e) => setDescriptionEditValue(e.target.value)}
+                                        rows={5}
+                                    />
+                                    <div className="flex gap-3">
+                                        <button
+                                            className="px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                saveDescription(task.id)
+                                            }}
+                                            disabled={updateTaskProcessing}
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            className="px-6 py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium shadow-sm"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                cancelEditingDescription()
+                                            }}
+                                            disabled={updateTaskProcessing}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap text-base leading-relaxed">
+                                    {task?.description || 'No description provided.'}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+        )
+    }
+
     const TABLE_NOT_STARTED_HEAD = (
         <>
             <tr>
@@ -1490,7 +1774,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                         tableTitle="NOT STARTED"
                         borderColor="border-gray-500"
                         headerContent={
-                            <div className="mb-4 flex gap-4">
+                            <div className="mb-4 flex flex-col sm:flex-row gap-4">
                                 <PrimaryInput
                                     type="text"
                                     placeholder="Search by name, assignee, division, or last action..."
@@ -1502,7 +1786,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                     placeholder="Sort Order"
                                     value={sortValues.not_started}
                                     onChange={(value) => handleSortChange('not_started', value)}
-                                    className="w-40"
+                                    className="w-full sm:w-40"
                                 >
                                     <SelectItem value="desc">Descending</SelectItem>
                                     <SelectItem value="asc">Ascending</SelectItem>
@@ -1510,10 +1794,27 @@ export default function Task({ divisions_data, employees_data, search_params = {
                             </div>
                         }
                     >
-                        <Table
-                            thead={TABLE_NOT_STARTED_HEAD}
-                            tbody={TABLE_NOT_STARTED_TBODY}
-                        />
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block">
+                            <Table
+                                thead={TABLE_NOT_STARTED_HEAD}
+                                tbody={TABLE_NOT_STARTED_TBODY}
+                            />
+                        </div>
+                        
+                        {/* Mobile Card View */}
+                        <div className="block md:hidden">
+                            {getDataArray(notStarted_data).length > 0 ? (
+                                getDataArray(notStarted_data).map(task => (
+                                    <TaskCard key={task.id} task={task} tableType="not_started" />
+                                ))
+                            ) : (
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    No tasks are pending to start
+                                </div>
+                            )}
+                        </div>
+
                         {notStarted_data?.links && (
                             <div className="mt-4">
                                 <Pagination
@@ -1532,7 +1833,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                         tableTitle="IN PROGRESS"
                         borderColor="border-orange-500"
                         headerContent={
-                            <div className="mb-4 flex gap-4">
+                            <div className="mb-4 flex flex-col sm:flex-row gap-4">
                                 <PrimaryInput
                                     type="text"
                                     placeholder="Search by name, assignee, division, or last action..."
@@ -1544,7 +1845,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                     placeholder="Sort Order"
                                     value={sortValues.in_progress}
                                     onChange={(value) => handleSortChange('in_progress', value)}
-                                    className="w-40"
+                                    className="w-full sm:w-40"
                                 >
                                     <SelectItem value="desc">Descending</SelectItem>
                                     <SelectItem value="asc">Ascending</SelectItem>
@@ -1552,10 +1853,27 @@ export default function Task({ divisions_data, employees_data, search_params = {
                             </div>
                         }
                     >
-                        <Table
-                            thead={TABLE_TODO_HEAD}
-                            tbody={TABLE_TODO_TBODY}
-                        />
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block">
+                            <Table
+                                thead={TABLE_TODO_HEAD}
+                                tbody={TABLE_TODO_TBODY}
+                            />
+                        </div>
+                        
+                        {/* Mobile Card View */}
+                        <div className="block md:hidden">
+                            {getDataArray(inProgress_data).length > 0 ? (
+                                getDataArray(inProgress_data).map(task => (
+                                    <TaskCard key={task.id} task={task} tableType="in_progress" />
+                                ))
+                            ) : (
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    No tasks are in progress
+                                </div>
+                            )}
+                        </div>
+
                         {inProgress_data?.links && (
                             <div className="mt-4">
                                 <Pagination
@@ -1574,7 +1892,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                         tableTitle="COMPLETED"
                         borderColor="border-green-500"
                         headerContent={
-                            <div className="mb-4 flex gap-4">
+                            <div className="mb-4 flex flex-col sm:flex-row gap-4">
                                 <PrimaryInput
                                     type="text"
                                     placeholder="Search by name, assignee, division, or last action..."
@@ -1586,7 +1904,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                     placeholder="Sort Order"
                                     value={sortValues.completed}
                                     onChange={(value) => handleSortChange('completed', value)}
-                                    className="w-40"
+                                    className="w-full sm:w-40"
                                 >
                                     <SelectItem value="desc">Descending</SelectItem>
                                     <SelectItem value="asc">Ascending</SelectItem>
@@ -1594,10 +1912,27 @@ export default function Task({ divisions_data, employees_data, search_params = {
                             </div>
                         }
                     >
-                        <Table
-                            thead={TABLE_COMPLETED_HEAD}
-                            tbody={TABLE_COMPLETED_TBODY}
-                        />
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block">
+                            <Table
+                                thead={TABLE_COMPLETED_HEAD}
+                                tbody={TABLE_COMPLETED_TBODY}
+                            />
+                        </div>
+                        
+                        {/* Mobile Card View */}
+                        <div className="block md:hidden">
+                            {getDataArray(completed_data).length > 0 ? (
+                                getDataArray(completed_data).map(task => (
+                                    <TaskCard key={task.id} task={task} tableType="completed" />
+                                ))
+                            ) : (
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    No tasks are completed
+                                </div>
+                            )}
+                        </div>
+
                         {completed_data?.links && (
                             <div className="mt-4">
                                 <Pagination
