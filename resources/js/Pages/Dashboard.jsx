@@ -190,7 +190,7 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                                         tasks_by_division.map(division => (
                                             <TableRow key={division.id}>
                                                 <TableData>
-                                                    <DivisionContainer bgcolor="">
+                                                    <DivisionContainer bgcolor={division.division_color}>
                                                         {division.division_name}
                                                     </DivisionContainer>
                                                 </TableData>

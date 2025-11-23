@@ -33,6 +33,7 @@ class DashboardController extends Controller
                 return [
                     'id' => $division->id,
                     'division_name' => $division->division_name,
+                    'division_color' => $division->division_color,
                     'total_tasks' => $division->task_count,
                     'not_started' => Task::where('division_id', $division->id)
                         ->where('status', 'not_started')
