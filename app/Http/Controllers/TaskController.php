@@ -219,7 +219,8 @@ class TaskController extends Controller
         // Get original values for change tracking
         $original = $task->getOriginal();
 
-        $task->update([
+        // Prepare new values
+        $newValues = [
             'name' => $validated['task_name'],
             'employee_id' => $employeeId,
             'division_id' => $divisionId,
@@ -228,17 +229,67 @@ class TaskController extends Controller
             'priority' => $validated['priority'] ?? null,
             'due_date' => $validated['due_date'] ?? null,
             'description' => $validated['description'] ?? null,
-        ]);
+        ];
 
-        // Track changes
+        // Track changes by comparing original with new values
         $changes = [];
-        $task->refresh();
-        foreach ($task->getDirty() as $key => $value) {
-            $changes[$key] = [
-                'from' => $original[$key] ?? null,
-                'to' => $value,
-            ];
+        foreach ($newValues as $key => $newValue) {
+            $originalValue = $original[$key] ?? null;
+            
+            // Compare values (handle null comparisons)
+            if ($originalValue != $newValue || 
+                ($originalValue === null && $newValue !== null) || 
+                ($originalValue !== null && $newValue === null)) {
+                
+                // Resolve IDs to names for display
+                $fromValue = $originalValue;
+                $toValue = $newValue;
+                $displayKey = $key;
+                
+                if ($key === 'employee_id') {
+                    $displayKey = 'assignee';
+                    // Resolve original employee name
+                    if ($originalValue) {
+                        $originalEmployee = Employee::find($originalValue);
+                        $fromValue = $originalEmployee ? trim($originalEmployee->first_name . ' ' . $originalEmployee->last_name) : 'N/A';
+                    } else {
+                        $fromValue = 'N/A';
+                    }
+                    
+                    // Resolve new employee name
+                    if ($newValue) {
+                        $newEmployee = Employee::find($newValue);
+                        $toValue = $newEmployee ? trim($newEmployee->first_name . ' ' . $newEmployee->last_name) : 'N/A';
+                    } else {
+                        $toValue = 'N/A';
+                    }
+                } elseif ($key === 'division_id') {
+                    $displayKey = 'division';
+                    // Resolve original division name
+                    if ($originalValue) {
+                        $originalDivision = Division::find($originalValue);
+                        $fromValue = $originalDivision ? $originalDivision->division_name : 'N/A';
+                    } else {
+                        $fromValue = 'N/A';
+                    }
+                    
+                    // Resolve new division name
+                    if ($newValue) {
+                        $newDivision = Division::find($newValue);
+                        $toValue = $newDivision ? $newDivision->division_name : 'N/A';
+                    } else {
+                        $toValue = 'N/A';
+                    }
+                }
+                
+                $changes[$displayKey] = [
+                    'from' => $fromValue,
+                    'to' => $toValue,
+                ];
+            }
         }
+
+        $task->update($newValues);
 
         // Log activity
         Activity::create([
