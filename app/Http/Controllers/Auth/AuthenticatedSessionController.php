@@ -18,6 +18,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
+        Inertia::encryptHistory(); // Encrypt history for login page
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
@@ -33,6 +35,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Clear history to prevent back navigation to login page
+        Inertia::clearHistory();
+
         return redirect()->intended(route('dashboard.index', absolute: false));
     }
 
@@ -47,6 +52,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
+        Inertia::clearHistory();
+        
         return redirect('/');
     }
 }

@@ -20,6 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
+        Inertia::encryptHistory(); // Encrypt history for register page
+        
         return Inertia::render('Auth/Register');
     }
 
@@ -46,6 +48,9 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Clear history to prevent back navigation to register page
+        Inertia::clearHistory();
+
+        return redirect(route('dashboard.index', absolute: false));
     }
 }

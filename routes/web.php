@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
+    Inertia::encryptHistory(); // Encrypt history for root/login page
     return Inertia::render('Auth/Login');
 });
 
