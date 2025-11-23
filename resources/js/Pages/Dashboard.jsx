@@ -9,9 +9,19 @@ import TableData from '@/Components/Table/TableData';
 import StatusContainer from '@/Components/Misc/StatusContainer';
 import Badge from '@/Components/Misc/Badge';
 import DivisionContainer from '@/Components/Misc/DivisionContainer';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { useEffect } from 'react';
 
 export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_by_division = [] }) {
+    const { auth } = usePage().props;
+
+    // Redirect to login if not authenticated (prevents back navigation after logout)
+    useEffect(() => {
+        if (!auth.user) {
+            // Use window.location.replace for hard redirect that clears history
+            window.location.replace('/');
+        }
+    }, [auth.user]);
     const StatusColor = (status) => {
         if (status === 'Not Started') {
             return 'bg-gray-400'
