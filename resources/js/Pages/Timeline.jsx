@@ -83,12 +83,12 @@ export default function Timeline({ activities = {} }) {
 
             <MainContainer>
                 <PrimaryCard>
-                    <div className="relative">
+                    <div className="relative min-h-[calc(100vh-30vh)] flex flex-col">
                         {/* Timeline */}
-                        <div className="space-y-6">
+                        <div className="space-y-6 flex-1 flex flex-col">
                             {activitiesList.length > 0 ? (
                                 activitiesList.map((activity, index) => (
-                                    <div key={activity.id} className="relative flex gap-4">
+                                    <div key={activity.id} className="relative flex gap-4 w-full">
                                         {/* Timeline line */}
                                         {index !== activitiesList.length - 1 && (
                                             <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600"></div>
