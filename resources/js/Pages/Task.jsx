@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { Head, useForm, usePage, router } from "@inertiajs/react";
 import { SelectItem } from "@/components/ui/select"
 import { toast } from 'sonner';
@@ -792,9 +792,8 @@ export default function Task({ divisions_data, employees_data, search_params = {
                 const isEditing = editingTaskId === task.id
                 const isExpanded = expandedRows.has(task.id)
                 return (
-                    <>
-                        <TableRow 
-                            key={task.id}
+                    <Fragment key={task.id}>
+                        <TableRow
                             onClick={() => !isEditing && toggleAccordion(task.id)}
                             className={!isEditing ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" : ""}
                         >
@@ -1046,7 +1045,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                 </TableData>
                             </TableRow>
                         )}
-                    </>
+                    </Fragment>
                 )
             })}
 
@@ -1092,9 +1091,8 @@ export default function Task({ divisions_data, employees_data, search_params = {
                 const isEditing = editingTaskId === task.id
                 const isExpanded = expandedRows.has(task.id)
                 return (
-                    <>
-                        <TableRow 
-                            key={task.id}
+                    <Fragment key={task.id}>
+                        <TableRow
                             onClick={() => !isEditing && toggleAccordion(task.id)}
                             className={!isEditing ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" : ""}
                         >
@@ -1346,7 +1344,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                 </TableData>
                             </TableRow>
                         )}
-                    </>
+                    </Fragment>
                 )
             })}
 
@@ -1392,9 +1390,8 @@ export default function Task({ divisions_data, employees_data, search_params = {
                 const isEditing = editingTaskId === task.id
                 const isExpanded = expandedRows.has(task.id)
                 return (
-                    <>
-                        <TableRow 
-                            key={task.id}
+                    <Fragment key={task.id}>
+                        <TableRow
                             onClick={() => !isEditing && toggleAccordion(task.id)}
                             className={!isEditing ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" : ""}
                         >
@@ -1646,7 +1643,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                 </TableData>
                             </TableRow>
                         )}
-                    </>
+                    </Fragment>
                 )
             })}
 
