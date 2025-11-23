@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             "ORED",
             "LD",
             "RD",
+            "PMD",
         ];
 
         $colors = [
@@ -62,6 +63,7 @@ class DatabaseSeeder extends Seeder
             "#E74C3C", // ORED
             "#F39C12", // LD
             "#16A085", // RD
+            "#E67E22", // PMD
         ];
 
         foreach ($divisions as $index => $name) {
