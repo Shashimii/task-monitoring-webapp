@@ -158,10 +158,10 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                                             </TableRow>
                                         ))
                                     ) : (
-                                        <TableRow>
-                                            <TableData colSpan={4} className="text-center text-gray-500 dark:text-gray-400 py-8">
-                                                No recent tasks found
-                                            </TableData>
+                                        <TableRow
+                                            colspan={4}
+                                        >
+                                            No recent task found
                                         </TableRow>
                                     )}
                                 </>
@@ -217,17 +217,17 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                                             </TableRow>
                                         ))
                                     ) : (
-                                        <TableRow>
-                                            <TableData colSpan={5} className="text-center text-gray-500 dark:text-gray-400 py-8">
-                                                No tasks by division found
-                                            </TableData>
+                                        <TableRow
+                                            colspan={5}
+                                        >
+                                            No task by division
                                         </TableRow>
                                     )}
                                 </>
                             }
                         />
                     </TableContainer>
-                </div>
+            </div>
             </MainContainer>
         </AuthenticatedLayout>
     );
