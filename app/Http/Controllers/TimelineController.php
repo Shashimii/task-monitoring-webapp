@@ -12,7 +12,7 @@ class TimelineController extends Controller
     public function index(Request $request) {
         // Get pagination parameter
         $page = $request->get('page', 1);
-        $perPage = 15;
+        $perPage = 5;
 
         // Fetch activities ordered by most recent first
         $activities = Activity::with('user')
