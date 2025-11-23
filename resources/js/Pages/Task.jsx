@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Head, useForm, usePage, router } from "@inertiajs/react";
 import { SelectItem } from "@/components/ui/select"
 import { toast } from 'sonner';
+import { format, parse } from 'date-fns';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import MainContainer from "@/Components/DivContainer/MainContainer";
 import Modal from "@/Components/Modal";
@@ -199,6 +200,12 @@ export default function Task({ divisions_data, employees_data, search_params = {
         e.preventDefault();
         toast.loading("Creating task...");
 
+        // Format date before submitting - temporarily update form data
+        const originalDueDate = addTaskData.due_date;
+        if (originalDueDate && originalDueDate instanceof Date) {
+            setAddTaskData("due_date", formatDateForBackend(originalDueDate));
+        }
+        
         addTaskPost(route("task.store"), {
             onSuccess: () => {
                 addTaskReset();
@@ -208,6 +215,10 @@ export default function Task({ divisions_data, employees_data, search_params = {
                 toast.success("Task Created!");
             },
             onError: (errors) => {
+                // Restore original date if error
+                if (originalDueDate instanceof Date) {
+                    setAddTaskData("due_date", originalDueDate);
+                }
                 const messages = Object.values(errors).flat().join(" ");
                 toast.dismiss();
                 toast.error(messages || "Something went wrong.");
@@ -336,7 +347,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
             }
         }
 
-        router.put(route("task.update", taskId), updateData, {
+        router.put(route("task.update", taskId), prepareTaskDataForSave(updateData), {
             preserveState: true,
             preserveScroll: true,
             onSuccess: () => {
@@ -377,6 +388,22 @@ export default function Task({ divisions_data, employees_data, search_params = {
 
     // -Edit Task
     const startEditing = (task) => {
+        // Parse due_date string (format: MM/DD/YYYY) to Date object for Datepicker
+        let dueDateValue = null
+        if (task?.due_date) {
+            try {
+                // Parse MM/DD/YYYY format
+                dueDateValue = parse(task.due_date, 'MM/dd/yyyy', new Date())
+            } catch (e) {
+                // Fallback: try to parse as ISO string
+                try {
+                    dueDateValue = new Date(task.due_date)
+                } catch (e2) {
+                    dueDateValue = null
+                }
+            }
+        }
+
         setEditTaskData({
             task_name: task?.name || '',
             assignee: task?.employee?.id ? String(task.employee.id) : '',
@@ -384,7 +411,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
             last_action: task?.last_action || '',
             status: statusToDbValue(task?.status || ''),
             priority: priorityToDbValue(task?.priority || ''),
-            due_date: task?.due_date || '',
+            due_date: dueDateValue,
             description: task?.description || '',
         })
         setEditingTaskId(task.id)
@@ -402,6 +429,25 @@ export default function Task({ divisions_data, employees_data, search_params = {
             ...prev,
             [field]: value
         }))
+    }
+
+    // Format date for backend (Y-m-d format to avoid timezone issues)
+    const formatDateForBackend = (date) => {
+        if (!date) return null
+        if (date instanceof Date) {
+            // Format as Y-m-d to avoid timezone conversion issues
+            return format(date, 'yyyy-MM-dd')
+        }
+        return date
+    }
+
+    // Prepare task data for saving (format dates)
+    const prepareTaskDataForSave = (data) => {
+        const prepared = { ...data }
+        if (prepared.due_date) {
+            prepared.due_date = formatDateForBackend(prepared.due_date)
+        }
+        return prepared
     }
 
     // Update task
@@ -614,7 +660,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                                     setUpdateTaskProcessing(true)
                                                     toast.loading("Updating task...")
 
-                                                    router.put(route("task.update", task.id), editTaskData, {
+                                                    router.put(route("task.update", task.id), prepareTaskDataForSave(editTaskData), {
                                                         preserveState: true,
                                                         preserveScroll: true,
                                                         onSuccess: () => {
@@ -914,7 +960,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                                     setUpdateTaskProcessing(true)
                                                     toast.loading("Updating task...")
 
-                                                    router.put(route("task.update", task.id), editTaskData, {
+                                                    router.put(route("task.update", task.id), prepareTaskDataForSave(editTaskData), {
                                                         preserveState: true,
                                                         preserveScroll: true,
                                                         onSuccess: () => {
@@ -1214,7 +1260,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                                     setUpdateTaskProcessing(true)
                                                     toast.loading("Updating task...")
 
-                                                    router.put(route("task.update", task.id), editTaskData, {
+                                                    router.put(route("task.update", task.id), prepareTaskDataForSave(editTaskData), {
                                                         preserveState: true,
                                                         preserveScroll: true,
                                                         onSuccess: () => {

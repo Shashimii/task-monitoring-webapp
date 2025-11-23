@@ -153,6 +153,17 @@ class TaskController extends Controller
             ? intval($validated['division'])
             : null;
 
+        // Normalize due_date to avoid timezone issues - set to start of day
+        $dueDate = null;
+        if (!empty($validated['due_date'])) {
+            try {
+                // Parse the date and set to start of day to avoid timezone shifts
+                $dueDate = \Carbon\Carbon::parse($validated['due_date'])->startOfDay();
+            } catch (\Exception $e) {
+                $dueDate = null;
+            }
+        }
+
         $task = Task::create([
             'name' => $validated['task_name'],
             'employee_id' => $employeeId,
@@ -160,7 +171,7 @@ class TaskController extends Controller
             'last_action' => $validated['last_action'] ?? null,
             'status' => $validated['status'] ?? null,
             'priority' => $validated['priority'] ?? null,
-            'due_date' => $validated['due_date'] ?? null,
+            'due_date' => $dueDate,
             'description' => $validated['description'] ?? null,
         ]);
 
@@ -220,6 +231,17 @@ class TaskController extends Controller
         $original = $task->getOriginal();
 
         // Prepare new values
+        // Normalize due_date to avoid timezone issues - set to start of day in app timezone
+        $dueDate = null;
+        if (!empty($validated['due_date'])) {
+            try {
+                // Parse the date and set to start of day to avoid timezone shifts
+                $dueDate = \Carbon\Carbon::parse($validated['due_date'])->startOfDay();
+            } catch (\Exception $e) {
+                $dueDate = null;
+            }
+        }
+
         $newValues = [
             'name' => $validated['task_name'],
             'employee_id' => $employeeId,
@@ -227,7 +249,7 @@ class TaskController extends Controller
             'last_action' => $validated['last_action'] ?? null,
             'status' => $validated['status'] ?? null,
             'priority' => $validated['priority'] ?? null,
-            'due_date' => $validated['due_date'] ?? null,
+            'due_date' => $dueDate,
             'description' => $validated['description'] ?? null,
         ];
 
@@ -235,6 +257,51 @@ class TaskController extends Controller
         $changes = [];
         foreach ($newValues as $key => $newValue) {
             $originalValue = $original[$key] ?? null;
+            
+            // Special handling for due_date - normalize dates for comparison
+            if ($key === 'due_date') {
+                try {
+                    // Normalize both dates to Y-m-d format for comparison (ignoring time)
+                    $originalDate = null;
+                    $newDate = null;
+                    
+                    if ($originalValue) {
+                        $originalDate = is_string($originalValue) 
+                            ? \Carbon\Carbon::parse($originalValue)->format('Y-m-d')
+                            : $originalValue->format('Y-m-d');
+                    }
+                    
+                    if ($newValue) {
+                        $newDate = \Carbon\Carbon::parse($newValue)->format('Y-m-d');
+                    }
+                    
+                    // Only track if dates are actually different
+                    if ($originalDate !== $newDate) {
+                        $fromFormatted = $originalValue 
+                            ? (is_string($originalValue) 
+                                ? \Carbon\Carbon::parse($originalValue)->format('m/d/Y')
+                                : $originalValue->format('m/d/Y'))
+                            : 'N/A';
+                        $toFormatted = $newValue 
+                            ? \Carbon\Carbon::parse($newValue)->format('m/d/Y')
+                            : 'N/A';
+                        
+                        $changes[$key] = [
+                            'from' => $fromFormatted,
+                            'to' => $toFormatted,
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    // If date parsing fails, fall back to regular comparison
+                    if ($originalValue != $newValue) {
+                        $changes[$key] = [
+                            'from' => $originalValue ?? 'N/A',
+                            'to' => $newValue ?? 'N/A',
+                        ];
+                    }
+                }
+                continue;
+            }
             
             // Compare values (handle null comparisons)
             if ($originalValue != $newValue || 
