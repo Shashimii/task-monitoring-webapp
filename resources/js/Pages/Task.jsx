@@ -1771,13 +1771,13 @@ export default function Task({ divisions_data, employees_data, search_params = {
                         tableTitle="NOT STARTED"
                         borderColor="border-gray-500"
                         headerContent={
-                            <div className="mb-4 flex flex-col sm:flex-row gap-4">
+                            <div className="mb-4 flex flex-col sm:flex-row sm:gap-4">
                                 <PrimaryInput
                                     type="text"
                                     placeholder="Search by name, assignee, division, or last action..."
                                     value={searchValues.not_started}
                                     onChange={(e) => handleSearchChange('not_started', e.target.value)}
-                                    className="flex-1"
+                                    className="flex-1 w-[22rem]"
                                 />
                                 <SelectInput
                                     placeholder="Sort Order"
@@ -1836,7 +1836,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                     placeholder="Search by name, assignee, division, or last action..."
                                     value={searchValues.in_progress}
                                     onChange={(e) => handleSearchChange('in_progress', e.target.value)}
-                                    className="flex-1"
+                                    className="flex-1 w-[22rem]"
                                 />
                                 <SelectInput
                                     placeholder="Sort Order"
@@ -1895,7 +1895,7 @@ export default function Task({ divisions_data, employees_data, search_params = {
                                     placeholder="Search by name, assignee, division, or last action..."
                                     value={searchValues.completed}
                                     onChange={(e) => handleSearchChange('completed', e.target.value)}
-                                    className="flex-1"
+                                    className="flex-1 w-[22rem]"
                                 />
                                 <SelectInput
                                     placeholder="Sort Order"
