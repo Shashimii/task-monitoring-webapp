@@ -45,6 +45,14 @@ export default function DeleteUserForm({ className = '' }) {
         reset();
     };
 
+    const handleModalChange = (value) => {
+        setConfirmingUserDeletion(value);
+        if (!value) {
+            clearErrors();
+            reset();
+        }
+    };
+
     return (
         <section className={`space-y-6 ${className}`}>
             <header>
@@ -64,7 +72,7 @@ export default function DeleteUserForm({ className = '' }) {
                 Delete Account
             </DangerButton>
 
-            <Modal show={confirmingUserDeletion} onClose={closeModal}>
+            <Modal open={confirmingUserDeletion} setOpen={handleModalChange}>
                 <form onSubmit={deleteUser} className="p-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                         Are you sure you want to delete your account?
