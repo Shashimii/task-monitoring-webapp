@@ -209,7 +209,7 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                     </PrimaryCard>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:min-h-[35rem]">
                     {/* Recent Tasks */}
                     <TableContainer
                         tableTitle="Recent Tasks"
