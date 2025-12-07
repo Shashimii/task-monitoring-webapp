@@ -50,7 +50,7 @@ export default function Pagination({ links = [], current_page = 1, per_page = 7,
     // Build smart pagination with ellipsis
     const buildPaginationLinks = () => {
         const paginationLinks = [];
-        
+
         // Always add Previous button (first link)
         if (links[0]) {
             paginationLinks.push({ type: 'previous', ...links[0] });
@@ -90,7 +90,7 @@ export default function Pagination({ links = [], current_page = 1, per_page = 7,
             for (let i = startPage; i <= endPage; i++) {
                 // Skip if already added (page 1) or will be added (last page)
                 if (i === 1 || i === last_page) continue;
-                
+
                 const link = links.find(l => {
                     const pageNum = getPageNumber(l);
                     return pageNum === i;
@@ -128,46 +128,47 @@ export default function Pagination({ links = [], current_page = 1, per_page = 7,
     const paginationLinks = buildPaginationLinks();
 
     const handlePageClick = (url) => {
-        if (url) {
-            // Extract query parameters from URL if it's a full URL
-            try {
-                const urlObj = new URL(url, window.location.origin);
-                const params = Object.fromEntries(urlObj.searchParams);
+        if (!url) return;
 
-                // Get current URL params to preserve other table pages
-                const currentParams = new URLSearchParams(window.location.search);
+        try {
+            const urlObj = new URL(url, window.location.origin);
 
-                // Preserve other table page parameters
-                const otherPageParams = {
-                    'not_started_page': currentParams.get('not_started_page'),
-                    'in_progress_page': currentParams.get('in_progress_page'),
-                    'completed_page': currentParams.get('completed_page'),
+            // Extract target URL params
+            let params = Object.fromEntries(urlObj.searchParams);
+            
+            // Extract current browser params
+            let currentParams = Object.fromEntries(
+                new URLSearchParams(window.location.search)
+            );
+
+            // Convert Laravel pagination ?page=2 → ?not_started_page=2
+            if (params.page && pageParam) {
+                params = {
+                    ...params,
+                    [pageParam]: params.page
                 };
-
-                // Remove the generic 'page' param and use table-specific param
-                if (params.page && tableType) {
-                    params[pageParam] = params.page;
-                    delete params.page;
-                }
-
-                // Merge with other table page params (only if they exist)
-                Object.entries(otherPageParams).forEach(([key, value]) => {
-                    if (value && key !== pageParam) {
-                        params[key] = value;
-                    }
-                });
-
-                router.get(urlObj.pathname, params, {
-                    preserveState: true,
-                    preserveScroll: true,
-                });
-            } catch (e) {
-                // If URL parsing fails, try using it as-is
-                router.get(url, {}, {
-                    preserveState: true,
-                    preserveScroll: true,
-                });
+                delete params.page;
             }
+
+            // Merge: currentParams → params  
+            // but override only the specific page param for this table
+            const finalParams = {
+                ...currentParams,
+                ...params,
+            };
+
+            // Remove generic default page param if it exists
+            delete finalParams.page;
+
+            router.get(urlObj.pathname, finalParams, {
+                preserveState: true,
+                preserveScroll: true,
+            });
+        } catch (err) {
+            router.get(url, {}, {
+                preserveState: true,
+                preserveScroll: true,
+            });
         }
     };
 
