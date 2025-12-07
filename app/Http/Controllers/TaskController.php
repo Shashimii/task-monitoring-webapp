@@ -84,7 +84,8 @@ class TaskController extends Controller
         return Inertia::render('Task', [
             'divisions_data' => $divisions,
             'employees_data' => $employees,
-            'notStarted_data' => [
+            
+            'notStarted' => [
                 'data' => TaskResource::collection($notStarted->items())->resolve(),
                 'links' => $notStarted->linkCollection()->toArray(),
                 'current_page' => $notStarted->currentPage(),
@@ -92,7 +93,7 @@ class TaskController extends Controller
                 'per_page' => $notStarted->perPage(),
                 'total' => $notStarted->total(),
             ],
-            'inProgress_data' => [
+            'inProgress' => [
                 'data' => TaskResource::collection($inProgress->items())->resolve(),
                 'links' => $inProgress->linkCollection()->toArray(),
                 'current_page' => $inProgress->currentPage(),
@@ -100,7 +101,7 @@ class TaskController extends Controller
                 'per_page' => $inProgress->perPage(),
                 'total' => $inProgress->total(),
             ],
-            'completed_data' => [
+            'completed' => [
                 'data' => TaskResource::collection($completed->items())->resolve(),
                 'links' => $completed->linkCollection()->toArray(),
                 'current_page' => $completed->currentPage(),
@@ -108,6 +109,7 @@ class TaskController extends Controller
                 'per_page' => $completed->perPage(),
                 'total' => $completed->total(),
             ],
+    
             'search_params' => [
                 'not_started_search' => $notStartedSearch,
                 'in_progress_search' => $inProgressSearch,
