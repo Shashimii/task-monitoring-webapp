@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { router } from "@inertiajs/react";
 import { SelectItem } from "@/components/ui/select"
 import TableContainer from "../DivContainer/TableContainer";
@@ -45,7 +45,7 @@ export default function TaskTable({
     // Set
     const handleSearchChange = (value) => {
         setSearchValues(value);
-        setPageValues(1); 
+        setPageValues(1);
     }
 
     const handleSortChange = (value) => {
@@ -125,6 +125,16 @@ export default function TaskTable({
 
     const TBODY_CONTENT = (
         <>
+            {data.length === 0 &&
+                (
+                    <TableRow>
+                        <TableData colSpan={8} className="text-center">
+                            No tasks found.
+                        </TableData>
+                    </TableRow>
+                )
+            }
+
             {data.map(task => (
                 <TableRow key={task.id}>
                     <TableData>
