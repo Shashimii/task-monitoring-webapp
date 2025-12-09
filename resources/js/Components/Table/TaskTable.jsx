@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { router } from "@inertiajs/react";
 import { SelectItem } from "@/components/ui/select"
+import { toast } from 'sonner';
 import TableContainer from "../DivContainer/TableContainer";
 import Table from "./Table";
 import TableHeader from "./TableHeader";
@@ -9,6 +10,9 @@ import TableData from "./TableData";
 import Pagination from "../Misc/Pagination";
 import PrimaryInput from "../Form/PrimaryInput";
 import SelectInput from "../Form/SelectInput";
+import Datepicker from '../Form/Datepicker';
+import IconButton from '../Button/IconButton';
+import { format, parse } from 'date-fns';
 
 
 export default function TaskTable({
@@ -16,13 +20,23 @@ export default function TaskTable({
     tableIcon = "icon",
     tableTitle = "tableTitle",
     data,
+    employees_data,
+    divisions_data,
     paginationLinks = [],
     paginationCurrentPage,
     paginationPerPage,
     paginationTotal,
     paginationLastPage,
     tableType,
+    editData,
+    setEditData,
+    postEditData,
+    editProcessing,
+    resetEditData,
+    editErrors,
 }) {
+
+    // Search/Pagination/Ordering/URL //
     // Url
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
@@ -58,7 +72,12 @@ export default function TaskTable({
         const searchParam = `${tableType}_search`;
         const pageParam = `${tableType}_page`;
 
+        const currentParams = Object.fromEntries(
+            new URLSearchParams(window.location.search)
+        );
+
         const searchUrl = {
+            ...currentParams,
             [sortParam]: sortValues,
             [searchParam]: searchValues,
             [pageParam]: pageValues,
@@ -68,9 +87,99 @@ export default function TaskTable({
         router.get(route('task.index'), searchUrl, {
             preserveState: true,
             preserveScroll: true,
+            replace: true
         })
-    }, [sortValues, searchValues, tableType]);
+    }, [sortValues, searchValues, pageValues, tableType]);
 
+
+    // Table Actions
+    // State
+    const [isEditActive, setIsEditActive] = useState({});
+
+    // Set
+    const ToggleEdit = (task) => {
+        setIsEditActive((prev) => {
+            const isCurrentlyOpen = !!prev[task.id];
+
+            if (isCurrentlyOpen) {
+                // Close this row
+                const next = { ...prev };
+                delete next[task.id];
+                // optional: also clear form state here
+                // setEditData({});
+                return next;
+            }
+
+            // Open this row and close all others
+            // (if you want only one open at a time)
+            const next = { [task.id]: true };
+
+            // Seed form data when opening
+            setEditData({
+                task_name: task.name || '',
+                assignee: task.employee?.id ? String(task.employee.id) : '',
+                division: task.division?.id ? String(task.division.id) : '',
+                last_action: task.last_action || '',
+                status: formatStatusToDb(task.status) || '',
+                priority: formatPriorityToDb(task.priority) || '',
+                due_date: task.due_date || '',
+            });
+
+            return next;
+        });
+    };
+
+
+    // Formatting Functions
+    const formatStatusToDb = (value) => {
+        const map = {
+            'Not Started': 'not_started',
+            'In Progress': 'in_progress',
+            'Completed': 'completed',
+        }
+        return map[value] || value;
+    }
+
+    const formatPriorityToDb = (value) => {
+        const map = {
+            'High': 'high',
+            'Medium': 'medium',
+            'Low': 'low',
+        }
+        return map[value] || value;
+    }
+
+    const formatDateToSave = (value) => {
+        const date = value instanceof Date ? value : new Date(value);
+        return format(date, 'yyyy-MM-dd');
+    }
+
+    // Edit
+    const updateEditTaskData = (field, value) => {
+        // useForm setData is async; use the callback form to avoid stale reads
+        setEditData((data) => ({
+            ...data,
+            [field]: value,
+        }));
+    };
+
+    // Save Edit
+    const saveEdit = (taskId) => {
+        postEditData(route('task.update', taskId), {
+            method: 'patch', // or 'patch'
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                toast.success("Task updated successfully!");
+                setIsEditActive((prev) => ({ ...prev, [taskId]: false }));
+                resetEditData();
+            },
+            onError: (errors) => {
+                const messages = Object.values(errors).flat().join(" ");
+                toast.error(messages || "Something went wrong.");
+            },
+        });
+    };
 
     const HEADER_CONTENT = (
         <div className="flex gap-4">
@@ -137,29 +246,147 @@ export default function TaskTable({
 
             {data.map(task => (
                 <TableRow key={task.id}>
-                    <TableData>
-                        {task?.name}
-                    </TableData>
-                    <TableData>
-                        {task?.employee?.first_name} {task?.employee?.last_name}
-                    </TableData>
-                    <TableData>
-                        {task?.division?.division_name}
-                    </TableData>
-                    <TableData>
-                        {task?.last_action}
-                    </TableData>
-                    <TableData>
-                        {task?.status}
-                    </TableData>
-                    <TableData>
-                        {task?.due_date}
-                    </TableData>
-                    <TableData>
-                        {task?.priority}
-                    </TableData>
-                    <TableData>
+                    {!isEditActive[task.id] && (
+                        <>
+                            <TableData>
+                                {task?.name}
+                            </TableData>
+                            <TableData>
+                                {task?.employee?.first_name} {task?.employee?.last_name}
+                            </TableData>
+                            <TableData>
+                                {task?.division?.division_name}
+                            </TableData>
+                            <TableData>
+                                {task?.last_action}
+                            </TableData>
+                            <TableData>
+                                {task?.status}
+                            </TableData>
+                            <TableData>
+                                {task?.due_date}
+                            </TableData>
+                            <TableData>
+                                {task?.priority}
+                            </TableData>
+                        </>
+                    )}
 
+                    {isEditActive[task.id] && (
+                        <>
+                            <TableData>
+                                <PrimaryInput
+                                    type="text"
+                                    value={editData?.task_name ?? ''}
+                                    onChange={(e) => updateEditTaskData("task_name", e.target.value)}
+                                    className={editErrors?.task_name ? `border border-red-500` : ``}
+                                />
+
+                            </TableData>
+                            <TableData>
+                                <SelectInput
+                                    placeholder="Select Assignee"
+                                    defaultValue={editData?.assignee || (task?.employee?.id ? String(task.employee.id) : undefined)}
+                                    onChange={(value) => updateEditTaskData("assignee", value)}
+                                >
+                                    {employees_data.map((employee) => (
+                                        <SelectItem key={employee.id} value={String(employee.id)}>
+                                            {employee.last_name} {employee.first_name}
+                                        </SelectItem>
+                                    ))}
+
+                                </SelectInput>
+                            </TableData>
+                            <TableData>
+                                <SelectInput
+                                    placeholder="Select Division"
+                                    defaultValue={editData?.division || (task?.division?.id ? String(task.division.id) : undefined)}
+                                    onChange={(value) => updateEditTaskData("division", value)}
+
+                                >
+                                    {divisions_data.map((division) => (
+                                        <SelectItem key={division.id} value={String(division.id)}>
+                                            {division.division_name}
+                                        </SelectItem>
+                                    ))}
+
+                                </SelectInput>
+                            </TableData>
+                            <TableData>
+                                <PrimaryInput
+                                    type="text"
+                                    value={editData?.last_action ?? ''}
+                                    onChange={(e) => updateEditTaskData("last_action", e.target.value)}
+                                />
+                            </TableData>
+                            <TableData>
+                                <SelectInput
+                                    placeholder="Select Status"
+                                    defaultValue={editData?.status || formatStatusToDb(task?.status) || ''}
+                                    onChange={(value) => updateEditTaskData("status", value)}
+                                >
+                                    <SelectItem value="not_started">Not Started</SelectItem>
+                                    <SelectItem value="in_progress">In Progress</SelectItem>
+                                    <SelectItem value="completed">Completed</SelectItem>
+
+                                </SelectInput>
+                            </TableData>
+                            <TableData>
+                                <Datepicker
+                                    value={editData?.due_date || task?.due_date || ''}
+                                    onChange={(date) => updateEditTaskData("due_date", formatDateToSave(date))}
+                                />
+                            </TableData>
+                            <TableData>
+                                <SelectInput
+                                    placeholder="Select Priority"
+                                    defaultValue={editData?.priority || formatPriorityToDb(task?.priority) || ''}
+                                    onChange={(value) => updateEditTaskData("priority", value)}
+                                >
+                                    <SelectItem value="high">High</SelectItem>
+                                    <SelectItem value="medium">Medium</SelectItem>
+                                    <SelectItem value="low">Low</SelectItem>
+                                </SelectInput>
+                            </TableData>
+                        </>
+                    )}
+
+                    <TableData>
+                        {!isEditActive[task.id] && (
+                            <IconButton
+                                onClick={() => ToggleEdit(task)}
+                                iconColor="blue-600"
+                                icon={
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                    </svg>
+                                }
+                            />
+                        )}
+
+                        {isEditActive[task.id] && (
+                            <IconButton
+                                onClick={() => saveEdit(task.id)}
+                                iconColor="green-600"
+                                icon={
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                }
+                            />
+                        )}
+
+                        {isEditActive[task.id] && (
+                            <IconButton
+                                onClick={() => ToggleEdit(task)}
+                                iconColor="red-600"
+                                icon={
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                }
+                            />
+                        )}
                     </TableData>
                 </TableRow>
             ))}
