@@ -131,6 +131,34 @@ export default function TaskTable({
     };
 
 
+    // Edit
+    const updateEditTaskData = (field, value) => {
+        // useForm setData is async; use the callback form to avoid stale reads
+        setEditData((data) => ({
+            ...data,
+            [field]: value,
+        }));
+    }
+
+    // Save Edit
+    const saveEdit = (taskId) => {
+        postEditData(route('task.update', taskId), {
+            method: 'patch', // or 'patch'
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                toast.success("Task updated successfully!");
+                setIsEditActive((prev) => ({ ...prev, [taskId]: false }));
+                resetEditData();
+            },
+            onError: (errors) => {
+                const messages = Object.values(errors).flat().join(" ");
+                toast.error(messages || "Something went wrong.");
+            },
+        });
+    }
+
+    
     // Formatting Functions
     const formatStatusToDb = (value) => {
         const map = {
@@ -155,32 +183,6 @@ export default function TaskTable({
         return format(date, 'yyyy-MM-dd');
     }
 
-    // Edit
-    const updateEditTaskData = (field, value) => {
-        // useForm setData is async; use the callback form to avoid stale reads
-        setEditData((data) => ({
-            ...data,
-            [field]: value,
-        }));
-    };
-
-    // Save Edit
-    const saveEdit = (taskId) => {
-        postEditData(route('task.update', taskId), {
-            method: 'patch', // or 'patch'
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                toast.success("Task updated successfully!");
-                setIsEditActive((prev) => ({ ...prev, [taskId]: false }));
-                resetEditData();
-            },
-            onError: (errors) => {
-                const messages = Object.values(errors).flat().join(" ");
-                toast.error(messages || "Something went wrong.");
-            },
-        });
-    };
 
     const HEADER_CONTENT = (
         <div className="flex gap-4">
