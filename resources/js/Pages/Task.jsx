@@ -135,6 +135,7 @@ export default function Task() {
                     editProcessing={editProcessingNotStarted}
                     resetEditData={resetEditDataNotStarted}
                     editErrors={editErrorsNotStarted}
+                    deleteTask={deleteTask}
                     tableType="not_started"
                 />
 
@@ -153,6 +154,7 @@ export default function Task() {
                     editProcessing={editProcessingInProgress}
                     resetEditData={resetEditDataInProgress}
                     editErrors={editErrorsInProgress}
+                    deleteTask={deleteTask}
                     tableType="in_progress"
                 />
 
@@ -171,6 +173,7 @@ export default function Task() {
                     editProcessing={editProcessingCompleted}
                     resetEditData={resetEditDataCompleted}
                     editErrors={editErrorsCompleted}
+                    deleteTask={deleteTask}
                     tableType="completed"
                 />
             </MainContainer>
