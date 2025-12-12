@@ -7,12 +7,15 @@ import Table from "./Table";
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
 import TableData from "./TableData";
+import Badge from "../Misc/Badge";
+import DivisionContainer from '../Misc/DivisionContainer';
 import Pagination from "../Misc/Pagination";
 import PrimaryInput from "../Form/PrimaryInput";
 import SelectInput from "../Form/SelectInput";
 import Datepicker from '../Form/Datepicker';
 import IconButton from '../Button/IconButton';
 import { format, parse } from 'date-fns';
+import DateContainer from '../Misc/DateContainer';
 
 
 export default function TaskTable({
@@ -258,16 +261,28 @@ export default function TaskTable({
                                 {task?.employee?.first_name} {task?.employee?.last_name}
                             </TableData>
                             <TableData>
-                                {task?.division?.division_name}
+                                <DivisionContainer
+                                    bgcolor={task?.division?.division_color}
+                                >
+                                    {task?.division?.division_name}
+                                </DivisionContainer>
                             </TableData>
                             <TableData>
                                 {task?.last_action}
                             </TableData>
                             <TableData>
-                                {task?.status}
+                                <DivisionContainer
+                                    bgcolor="bg-red-200"
+                                >
+                                    {task?.status}
+                                </DivisionContainer>
                             </TableData>
                             <TableData>
-                                {task?.due_date}
+                                <DateContainer
+                                    bgcolor="bg-red-200"
+                                >
+                                    {task?.due_date}
+                                </DateContainer>
                             </TableData>
                             <TableData>
                                 {task?.priority}
