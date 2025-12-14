@@ -18,6 +18,8 @@ import { format, parse } from 'date-fns';
 import DateContainer from '../Misc/DateContainer';
 import StatusContainer from '../Misc/StatusContainer';
 import PriorityContainer from '../Misc/PriorityContainer';
+import ActionData from './ActionData';
+import ActionHeader from './ActionHeader';
 
 
 export default function TaskTable({
@@ -232,9 +234,9 @@ export default function TaskTable({
             <TableHeader>
                 Priority
             </TableHeader>
-            <TableHeader>
+            <ActionHeader>
                 Action
-            </TableHeader>
+            </ActionHeader>
         </tr>
     )
 
@@ -373,7 +375,7 @@ export default function TaskTable({
                         </>
                     )}
 
-                    <TableData>
+                    <ActionData>
                         {!isEditActive[task.id] && (
                             <div className="flex items-center gap-3">
                                 <IconButton
@@ -423,7 +425,7 @@ export default function TaskTable({
                                 />
                             </div>
                         )}
-                    </TableData>
+                    </ActionData>
                 </TableRow>
             ))}
         </>
