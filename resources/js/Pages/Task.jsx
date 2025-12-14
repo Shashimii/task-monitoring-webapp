@@ -36,6 +36,24 @@ export default function Task() {
         </div>
     )
 
+    // Add Task
+    const {
+        data: addData,
+        setData: setDataAdd,
+        post: postAddData,
+        processing: addProcessing,
+        reset: resetAddData,
+        errors: addErrors
+    } = useForm({
+        task_name: '',
+        assignee: '',
+        division: '',
+        last_action: '',
+        status: '',
+        priority: '',
+        due_date: null
+    })
+
     // Edit Task
     // Not Started
     const {
@@ -133,6 +151,12 @@ export default function Task() {
                         paginationPerPage={notStarted.per_page}
                         paginationTotal={notStarted.total}
                         paginationLastPage={notStarted.last_page}
+                        addData={addData}
+                        setDataAdd={setDataAdd}
+                        postAddData={postAddData}
+                        addProcessing={addProcessing}
+                        resetAddData={resetAddData}
+                        addErrors={addErrors}
                         editData={editDataNotStarted}
                         setEditData={setEditDataNotStarted}
                         postEditData={postEditDataNotStarted}
@@ -155,6 +179,12 @@ export default function Task() {
                         paginationPerPage={inProgress.per_page}
                         paginationTotal={inProgress.total}
                         paginationLastPage={inProgress.last_page}
+                        addData={addData}
+                        setDataAdd={setDataAdd}
+                        postAddData={postAddData}
+                        addProcessing={addProcessing}
+                        resetAddData={resetAddData}
+                        addErrors={addErrors}
                         editData={editDataInProgress}
                         setEditData={setEditDataInProgress}
                         postEditData={postEditDataInProgress}
@@ -177,6 +207,12 @@ export default function Task() {
                         paginationPerPage={completed.per_page}
                         paginationTotal={completed.total}
                         paginationLastPage={completed.last_page}
+                        addData={addData}
+                        setDataAdd={setDataAdd}
+                        postAddData={postAddData}
+                        addProcessing={addProcessing}
+                        resetAddData={resetAddData}
+                        addErrors={addErrors}
                         editData={editDataCompleted}
                         setEditData={setEditDataCompleted}
                         postEditData={postEditDataCompleted}

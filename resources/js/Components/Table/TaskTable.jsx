@@ -35,6 +35,12 @@ export default function TaskTable({
     paginationTotal,
     paginationLastPage,
     tableType,
+    addData,
+    setDataAdd,
+    postAddData,
+    addProcessing,
+    resetAddData,
+    addErrors,
     editData,
     setEditData,
     postEditData,
@@ -99,6 +105,40 @@ export default function TaskTable({
         })
     }, [sortValues, searchValues, pageValues, tableType]);
 
+    // Table Adding //
+    // State
+    const [isAddActive, setIsAddActive] = useState(false);
+
+    // Set
+    const ToggleAdd = () => {
+        setIsAddActive(prev => !prev);
+    }
+
+    // Add
+    const updateAddTaskData = (field, value) => {
+        setDataAdd((data) => ({
+            ...data,
+            [field]: value,
+        }))
+    }
+
+    // Save Add
+    const saveAdd = () => {
+        postAddData(route('task.store'), {
+            method: 'post',
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                toast.success("Task added successfully!");
+                ToggleAdd()
+                resetAddData();
+            },
+            onError: (errors) => {
+                const messages = Object.values(errors).flat().join(" ");
+                toast.error(messages || "Something went wrong");
+            }
+        });
+    }
 
     // Table Editing //
     // State
@@ -428,6 +468,125 @@ export default function TaskTable({
                     </ActionData>
                 </TableRow>
             ))}
+
+            {!isAddActive && (
+                <TableRow
+                    onClick={() => ToggleAdd()}
+                >
+                    <TableData
+                        colSpan="8"
+                        className="cursor-pointer"
+                    >
+                        ➕ Add Task
+                    </TableData>
+                </TableRow>
+            )}
+
+            {isAddActive && (
+                <TableRow>
+                    <TableData>
+                        <PrimaryInput
+                            type="text"
+                            placeholder="Task"
+                            value={addData.task_name}
+                            onChange={(e) => updateAddTaskData("task_name", e.target.value)}
+                            className={editErrors?.task_name ? `border border-red-500` : ``}
+                        />
+
+                    </TableData>
+                    <TableData>
+                        <SelectInput
+                            placeholder="Select Assignee"
+                            value={addData.assignee}
+                            onChange={(value) => updateAddTaskData("assignee", value)}
+                        >
+                            {employees_data.map((employee) => (
+                                <SelectItem key={employee.id} value={String(employee.id)}>
+                                    {employee.last_name} {employee.first_name}
+                                </SelectItem>
+                            ))}
+
+                        </SelectInput>
+                    </TableData>
+                    <TableData>
+                        <SelectInput
+                            placeholder="Select Division"
+                            value={addData.division}
+                            onChange={(value) => updateAddTaskData("division", value)}
+
+                        >
+                            {divisions_data.map((division) => (
+                                <SelectItem key={division.id} value={String(division.id)}>
+                                    {division.division_name}
+                                </SelectItem>
+                            ))}
+
+                        </SelectInput>
+                    </TableData>
+                    <TableData>
+                        <PrimaryInput
+                            type="text"
+                            placeholder="Last Action"
+                            value={addData.last_action}
+                            onChange={(e) => updateAddTaskData("last_action", e.target.value)}
+                        />
+                    </TableData>
+                    <TableData>
+                        <SelectInput
+                            placeholder="Select Status"
+                            value={addData.status}
+                            onChange={(value) => updateAddTaskData("status", value)}
+                        >
+                            <SelectItem value="not_started">Not Started</SelectItem>
+                            <SelectItem value="in_progress">In Progress</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+
+                        </SelectInput>
+                    </TableData>
+                    <TableData>
+                        <Datepicker
+                            value={addData.due_date}
+                            onChange={(date) => updateAddTaskData("due_date", formatDateToSave(date))}
+                        />
+                    </TableData>
+                    <TableData>
+                        <SelectInput
+                            placeholder="Select Priority"
+                            value={addData.priority}
+                            onChange={(value) => updateAddTaskData("priority", value)}
+                        >
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                        </SelectInput>
+                    </TableData>
+                    {isAddActive && (
+                        <ActionData>
+                            <div className="flex items-center gap-3">
+                                <IconButton
+                                    onClick={() => saveAdd()}
+                                    iconColor="green-600"
+                                    icon={
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                    }
+                                />
+                                <IconButton
+                                    onClick={() => ToggleAdd()}
+                                    iconColor="red-600"
+                                    icon={
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                        </svg>
+                                    }
+                                />
+                            </div>
+                        </ActionData>
+                    )}
+                </TableRow>
+
+            )}
         </>
     )
 
