@@ -210,34 +210,32 @@ export default function TaskTable({
     )
 
     const THEAD_CONTENT = (
-        <>
-            <tr>
-                <TableHeader>
-                    Name
-                </TableHeader>
-                <TableHeader>
-                    Assignee
-                </TableHeader>
-                <TableHeader>
-                    Division
-                </TableHeader>
-                <TableHeader>
-                    Last Action
-                </TableHeader>
-                <TableHeader>
-                    Status
-                </TableHeader>
-                <TableHeader>
-                    Due Date
-                </TableHeader>
-                <TableHeader>
-                    Priority
-                </TableHeader>
-                <TableHeader>
-                    Action
-                </TableHeader>
-            </tr>
-        </>
+        <tr className="divide-x divide-gray-300 dark:divide-gray-700">
+            <TableHeader>
+                Task
+            </TableHeader>
+            <TableHeader>
+                Assignee
+            </TableHeader>
+            <TableHeader>
+                Division
+            </TableHeader>
+            <TableHeader>
+                Last Action
+            </TableHeader>
+            <TableHeader>
+                Status
+            </TableHeader>
+            <TableHeader>
+                Due Date
+            </TableHeader>
+            <TableHeader>
+                Priority
+            </TableHeader>
+            <TableHeader>
+                Action
+            </TableHeader>
+        </tr>
     )
 
     const TBODY_CONTENT = (
@@ -433,17 +431,18 @@ export default function TaskTable({
 
 
     return (
-        <TableContainer
-            borderColor={borderColor}
-            tableIcon={tableIcon}
-            tableTitle={tableTitle}
-            headerContent={HEADER_CONTENT}
-        >
-            <Table
-                thead={THEAD_CONTENT}
-                tbody={TBODY_CONTENT}
-            />
-
+        <div className="space-y-2">
+            <TableContainer
+                borderColor={borderColor}
+                tableIcon={tableIcon}
+                tableTitle={tableTitle}
+                headerContent={HEADER_CONTENT}
+            >
+                <Table
+                    thead={THEAD_CONTENT}
+                    tbody={TBODY_CONTENT}
+                />
+            </TableContainer>
             <Pagination
                 links={paginationLinks}
                 current_page={paginationCurrentPage}
@@ -452,6 +451,6 @@ export default function TaskTable({
                 last_page={paginationLastPage}
                 tableType={tableType}
             />
-        </TableContainer>
+        </div>
     );
 }

@@ -120,7 +120,7 @@ export default function Task() {
             <Head title="Tasks" />
 
             <MainContainer>
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-8">
                     <TaskTable
                         borderColor="border-gray-600"
                         tableTitle="Not Started"
