@@ -27,12 +27,6 @@ export default function Task() {
             <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                 Tasks
             </h2>
-
-            <ModalToggle
-                onClick={() => setOpen(true)}
-            >
-                Add Tasks
-            </ModalToggle>
         </div>
     )
 
