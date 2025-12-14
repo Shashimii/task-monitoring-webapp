@@ -16,6 +16,8 @@ import Datepicker from '../Form/Datepicker';
 import IconButton from '../Button/IconButton';
 import { format, parse } from 'date-fns';
 import DateContainer from '../Misc/DateContainer';
+import StatusContainer from '../Misc/StatusContainer';
+import PriorityContainer from '../Misc/PriorityContainer';
 
 
 export default function TaskTable({
@@ -271,11 +273,11 @@ export default function TaskTable({
                                 {task?.last_action}
                             </TableData>
                             <TableData>
-                                <DivisionContainer
-                                    bgcolor="bg-red-200"
+                                <StatusContainer
+                                    status={task?.status}
                                 >
                                     {task?.status}
-                                </DivisionContainer>
+                                </StatusContainer>
                             </TableData>
                             <TableData>
                                 <DateContainer
@@ -285,7 +287,11 @@ export default function TaskTable({
                                 </DateContainer>
                             </TableData>
                             <TableData>
-                                {task?.priority}
+                                <PriorityContainer
+                                    priority={task?.priority}
+                                >
+                                    {task?.priority}
+                                </PriorityContainer>
                             </TableData>
                         </>
                     )}
