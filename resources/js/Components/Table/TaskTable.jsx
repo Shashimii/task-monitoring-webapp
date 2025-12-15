@@ -140,6 +140,19 @@ export default function TaskTable({
         });
     }
 
+    // Preselect Status
+    const preselectStatus = (tableType) => {
+        if (tableType === "not_started") {
+            return "not_started";
+        }
+        if (tableType === "in_progress") {
+            return "in_progress";
+        }
+        if (tableType === "completed") {
+            return "completed";
+        }
+    }
+
     // Table Editing //
     // State
     const [isEditActive, setIsEditActive] = useState({});
@@ -536,8 +549,8 @@ export default function TaskTable({
                     <TableData>
                         <SelectInput
                             placeholder="Select Status"
-                            value={addData.status}
-                            onChange={(value) => updateAddTaskData("status", value)}
+                            value={preselectStatus(tableType)}
+                            onChange={(value) => up1dateAddTaskData("status", value)}
                         >
                             <SelectItem value="not_started">Not Started</SelectItem>
                             <SelectItem value="in_progress">In Progress</SelectItem>
