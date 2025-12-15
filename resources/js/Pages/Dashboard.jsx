@@ -211,150 +211,154 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:min-h-[35rem]">
                     {/* Recent Tasks */}
-                    <TableContainer
-                        tableTitle="Recent Tasks"
-                        borderColor="border-blue-500"
-                    >
-                        {/* Desktop Table View */}
-                        <div className="hidden md:block">
-                            <Table
-                                thead={
-                                    <tr>
-                                        <TableHeader>Task Name</TableHeader>
-                                        <TableHeader>Status</TableHeader>
-                                        <TableHeader>Priority</TableHeader>
-                                        <TableHeader>Assignee</TableHeader>
-                                    </tr>
-                                }
-                                tbody={
-                                    <>
-                                        {recent_tasks.length > 0 ? (
-                                            recent_tasks.map(task => (
-                                                <TableRow key={task.id}>
-                                                    <TableData>
-                                                        <Link
-                                                            href={route('task.index')}
-                                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                                                        >
-                                                            {task.name}
-                                                        </Link>
-                                                    </TableData>
-                                                    <TableData>
-                                                        <StatusContainer bgcolor={StatusColor(task?.status)}>
-                                                            {task?.status}
-                                                        </StatusContainer>
-                                                    </TableData>
-                                                    <TableData>
-                                                        <Badge bgcolor={PriorityColor(task?.priority)}>
-                                                            {task?.priority}
-                                                        </Badge>
-                                                    </TableData>
-                                                    <TableData>
-                                                        {task?.employee ? `${task.employee.first_name} ${task.employee.last_name}` : 'N/A'}
-                                                    </TableData>
+                    <div>
+                        <TableContainer
+                            tableTitle="Recent Tasks"
+                            borderColor="border-blue-500"
+                        >
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block">
+                                <Table
+                                    thead={
+                                        <tr>
+                                            <TableHeader>Task Name</TableHeader>
+                                            <TableHeader>Status</TableHeader>
+                                            <TableHeader>Priority</TableHeader>
+                                            <TableHeader>Assignee</TableHeader>
+                                        </tr>
+                                    }
+                                    tbody={
+                                        <>
+                                            {recent_tasks.length > 0 ? (
+                                                recent_tasks.map(task => (
+                                                    <TableRow key={task.id}>
+                                                        <TableData>
+                                                            <Link
+                                                                href={route('task.index')}
+                                                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                                                            >
+                                                                {task.name}
+                                                            </Link>
+                                                        </TableData>
+                                                        <TableData>
+                                                            <StatusContainer bgcolor={StatusColor(task?.status)}>
+                                                                {task?.status}
+                                                            </StatusContainer>
+                                                        </TableData>
+                                                        <TableData>
+                                                            <Badge bgcolor={PriorityColor(task?.priority)}>
+                                                                {task?.priority}
+                                                            </Badge>
+                                                        </TableData>
+                                                        <TableData>
+                                                            {task?.employee ? `${task.employee.first_name} ${task.employee.last_name}` : 'N/A'}
+                                                        </TableData>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow
+                                                    colspan={4}
+                                                >
+                                                    No recent task found
                                                 </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow
-                                                colspan={4}
-                                            >
-                                                No recent task found
-                                            </TableRow>
-                                        )}
-                                    </>
-                                }
-                            />
-                        </div>
+                                            )}
+                                        </>
+                                    }
+                                />
+                            </div>
 
-                        {/* Mobile Card View */}
-                        <div className="block md:hidden">
-                            {recent_tasks.length > 0 ? (
-                                recent_tasks.map(task => (
-                                    <RecentTaskCard key={task.id} task={task} />
-                                ))
-                            ) : (
-                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                    No recent task found
-                                </div>
-                            )}
-                        </div>
-                    </TableContainer>
+                            {/* Mobile Card View */}
+                            <div className="block md:hidden">
+                                {recent_tasks.length > 0 ? (
+                                    recent_tasks.map(task => (
+                                        <RecentTaskCard key={task.id} task={task} />
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        No recent task found
+                                    </div>
+                                )}
+                            </div>
+                        </TableContainer>
+                    </div>
 
                     {/* Tasks by Division */}
-                    <TableContainer
-                        tableTitle="Tasks by Division"
-                        borderColor="border-purple-500"
-                    >
-                        {/* Desktop Table View */}
-                        <div className="hidden md:block">
-                            <Table
-                                thead={
-                                    <tr>
-                                        <TableHeader>Division</TableHeader>
-                                        <TableHeader>Not Started</TableHeader>
-                                        <TableHeader>In Progress</TableHeader>
-                                        <TableHeader>Completed</TableHeader>
-                                        <TableHeader>Total</TableHeader>
-                                    </tr>
-                                }
-                                tbody={
-                                    <>
-                                        {tasks_by_division.length > 0 ? (
-                                            tasks_by_division.map(division => (
-                                                <TableRow key={division.id}>
-                                                    <TableData>
-                                                        <DivisionContainer bgcolor={division.division_color}>
-                                                            {division.division_name}
-                                                        </DivisionContainer>
-                                                    </TableData>
-                                                    <TableData>
-                                                        <span className="text-gray-600 dark:text-gray-400 font-semibold">
-                                                            {division.not_started || 0}
-                                                        </span>
-                                                    </TableData>
-                                                    <TableData>
-                                                        <span className="text-orange-600 dark:text-orange-400 font-semibold">
-                                                            {division.in_progress || 0}
-                                                        </span>
-                                                    </TableData>
-                                                    <TableData>
-                                                        <span className="text-green-600 dark:text-green-400 font-semibold">
-                                                            {division.completed || 0}
-                                                        </span>
-                                                    </TableData>
-                                                    <TableData>
-                                                        <span className="text-blue-600 dark:text-blue-400 font-bold">
-                                                            {division.total_tasks || 0}
-                                                        </span>
-                                                    </TableData>
+                    <div>
+                        <TableContainer
+                            tableTitle="Tasks by Division"
+                            borderColor="border-purple-500"
+                        >
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block">
+                                <Table
+                                    thead={
+                                        <tr>
+                                            <TableHeader>Division</TableHeader>
+                                            <TableHeader>Not Started</TableHeader>
+                                            <TableHeader>In Progress</TableHeader>
+                                            <TableHeader>Completed</TableHeader>
+                                            <TableHeader>Total</TableHeader>
+                                        </tr>
+                                    }
+                                    tbody={
+                                        <>
+                                            {tasks_by_division.length > 0 ? (
+                                                tasks_by_division.map(division => (
+                                                    <TableRow key={division.id}>
+                                                        <TableData>
+                                                            <DivisionContainer bgcolor={division.division_color}>
+                                                                {division.division_name}
+                                                            </DivisionContainer>
+                                                        </TableData>
+                                                        <TableData>
+                                                            <span className="text-gray-600 dark:text-gray-400 font-semibold">
+                                                                {division.not_started || 0}
+                                                            </span>
+                                                        </TableData>
+                                                        <TableData>
+                                                            <span className="text-orange-600 dark:text-orange-400 font-semibold">
+                                                                {division.in_progress || 0}
+                                                            </span>
+                                                        </TableData>
+                                                        <TableData>
+                                                            <span className="text-green-600 dark:text-green-400 font-semibold">
+                                                                {division.completed || 0}
+                                                            </span>
+                                                        </TableData>
+                                                        <TableData>
+                                                            <span className="text-blue-600 dark:text-blue-400 font-bold">
+                                                                {division.total_tasks || 0}
+                                                            </span>
+                                                        </TableData>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow
+                                                    colspan={5}
+                                                >
+                                                    No task by division
                                                 </TableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow
-                                                colspan={5}
-                                            >
-                                                No task by division
-                                            </TableRow>
-                                        )}
-                                    </>
-                                }
-                            />
-                        </div>
+                                            )}
+                                        </>
+                                    }
+                                />
+                            </div>
 
-                        {/* Mobile Card View */}
-                        <div className="block md:hidden">
-                            {tasks_by_division.length > 0 ? (
-                                tasks_by_division.map(division => (
-                                    <DivisionCard key={division.id} division={division} />
-                                ))
-                            ) : (
-                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                    No task by division
-                                </div>
-                            )}
-                        </div>
-                    </TableContainer>
-            </div>
+                            {/* Mobile Card View */}
+                            <div className="block md:hidden">
+                                {tasks_by_division.length > 0 ? (
+                                    tasks_by_division.map(division => (
+                                        <DivisionCard key={division.id} division={division} />
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        No task by division
+                                    </div>
+                                )}
+                            </div>
+                        </TableContainer>
+                    </div>
+                </div>
             </MainContainer>
         </AuthenticatedLayout>
     );
