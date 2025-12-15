@@ -111,6 +111,7 @@ export default function TaskTable({
 
     // Set
     const ToggleAdd = () => {
+        resetAddData();
         setIsAddActive(prev => !prev);
     }
 
