@@ -319,7 +319,9 @@ export default function TaskTable({
                                     {task?.status}
                                 </StatusContainer>
                             </TableData>
-                            <TableData>
+                            <TableData
+                                className="text-center"
+                            >
                                 <DateContainer
                                     bgcolor="bg-red-200"
                                 >
