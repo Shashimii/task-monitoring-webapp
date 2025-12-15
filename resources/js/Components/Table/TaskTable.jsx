@@ -128,6 +128,13 @@ export default function TaskTable({
 
         setIsAddActive((prev) => {
             const next = prev ? null : tableType;
+            // Seed status to the table's default when opening the add row
+            if (!prev && !addData.status) {
+                setDataAdd((data) => ({
+                    ...data,
+                    status: preselectStatus(tableType),
+                }));
+            }
             window.dispatchEvent(new CustomEvent('task-table-add-toggle', {
                 detail: { tableType: next }
             }));
@@ -570,7 +577,7 @@ export default function TaskTable({
                     <TableData>
                         <SelectInput
                             placeholder="Select Status"
-                            value={preselectStatus(tableType)}
+                            value={addData.status || preselectStatus(tableType)}
                             onChange={(value) => updateAddTaskData("status", value)}
                         >
                             <SelectItem value="not_started">Not Started</SelectItem>
