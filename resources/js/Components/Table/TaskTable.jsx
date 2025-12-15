@@ -107,13 +107,33 @@ export default function TaskTable({
 
     // Table Adding //
     // State
-    const [isAddActive, setIsAddActive] = useState(false);
+    const [isAddActive, setIsAddActive] = useState(null);
+
+    // Ensure only one TaskTable add row is open at a time across the page
+    useEffect(() => {
+        const handleAddToggle = (event) => {
+            const activeTable = event.detail?.tableType || null;
+            if (activeTable !== tableType) {
+                setIsAddActive(null);
+            }
+        };
+
+        window.addEventListener('task-table-add-toggle', handleAddToggle);
+        return () => window.removeEventListener('task-table-add-toggle', handleAddToggle);
+    }, [tableType]);
 
     // Set
     const ToggleAdd = () => {
         resetAddData();
-        setIsAddActive(prev => !prev);
-    }
+
+        setIsAddActive((prev) => {
+            const next = prev ? null : tableType;
+            window.dispatchEvent(new CustomEvent('task-table-add-toggle', {
+                detail: { tableType: next }
+            }));
+            return next;
+        });
+    };
 
     // Add
     const updateAddTaskData = (field, value) => {
@@ -487,7 +507,7 @@ export default function TaskTable({
 
             {!isAddActive && (
                 <TableRow
-                    onClick={() => ToggleAdd()}
+                    onClick={() => ToggleAdd(tableType)}
                 >
                     <TableData
                         colSpan="8"
@@ -551,7 +571,7 @@ export default function TaskTable({
                         <SelectInput
                             placeholder="Select Status"
                             value={preselectStatus(tableType)}
-                            onChange={(value) => up1dateAddTaskData("status", value)}
+                            onChange={(value) => updateAddTaskData("status", value)}
                         >
                             <SelectItem value="not_started">Not Started</SelectItem>
                             <SelectItem value="in_progress">In Progress</SelectItem>
