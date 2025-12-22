@@ -16,7 +16,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <ThemeProvider>
-            <div className="min-h-screen bg-gray-200 dark:bg-gray-900">
+            <div className="min-h-screen bg-gradient-to-tr from-green-200 via-gray-200 to-emerald-200 dark:bg-gray-900 dark:bg-none">
                 <nav className="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800 sticky top-0 z-10">
                     <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
