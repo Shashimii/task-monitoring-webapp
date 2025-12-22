@@ -22,6 +22,7 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
             window.location.replace('/');
         }
     }, [auth.user]);
+
     const StatusColor = (status) => {
         if (status === 'Not Started') {
             return 'bg-gray-400'
@@ -46,47 +47,29 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
         }
     }
 
-    // Mobile Card Components
-    const RecentTaskCard = ({ task }) => {
-        return (
-            <div className="mb-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-5">
-                <div className="space-y-3">
-                    <div>
-                        <Link
-                            href={route('task.index')}
-                            className="text-lg font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                        >
-                            {task.name}
-                        </Link>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Status:</span>
-                            <div className="mt-1">
-                                <StatusContainer bgcolor={StatusColor(task?.status)}>
-                                    {task?.status}
-                                </StatusContainer>
-                            </div>
-                        </div>
-                        <div className="flex-1">
-                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Priority:</span>
-                            <div className="mt-1">
-                                <Badge bgcolor={PriorityColor(task?.priority)}>
-                                    {task?.priority}
-                                </Badge>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Assignee:</span>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 mt-1">
-                            {task?.employee ? `${task.employee.first_name} ${task.employee.last_name}` : 'N/A'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        )
-    }
+    const formatTimestamp = (timestamp) => {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+
+        if (diffInSeconds < 60) {
+            return 'Just now';
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        } else if (diffInSeconds < 604800) {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} day${days > 1 ? 's' : ''} ago`;
+        } else {
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+    };
+
+
 
     const DivisionCard = ({ division }) => {
         return (
@@ -213,6 +196,7 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                     {/* Tasks by Division */}
                     <div>
                         <TableContainer
+                            tableIcon="🚩"
                             tableTitle="Tasks by Division"
                             borderColor="border-purple-500"
                         >
@@ -287,103 +271,70 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                         </TableContainer>
                     </div>
 
-                    {/* Recent Tasks */}
-                    <div>
-                        <TableContainer
-                            tableTitle="Recent Tasks"
-                            borderColor="border-blue-500"
-                        >
-                            {/* Desktop Table View */}
-                            <div className="hidden md:block">
-                                <Table
-                                    thead={
-                                        <tr>
-                                            <TableHeader>Task Name</TableHeader>
-                                            <TableHeader>Status</TableHeader>
-                                            <TableHeader>Priority</TableHeader>
-                                            <TableHeader>Assignee</TableHeader>
-                                        </tr>
-                                    }
-                                    tbody={
-                                        <>
-                                            {recent_tasks.length > 0 ? (
-                                                recent_tasks.map(task => (
-                                                    <TableRow key={task.id}>
-                                                        <TableData>
-                                                            <Link
-                                                                href={route('task.index')}
-                                                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                                                            >
-                                                                {task.name}
-                                                            </Link>
-                                                        </TableData>
-                                                        <TableData>
-                                                            <StatusContainer bgcolor={StatusColor(task?.status)}>
-                                                                {task?.status}
-                                                            </StatusContainer>
-                                                        </TableData>
-                                                        <TableData>
-                                                            <Badge bgcolor={PriorityColor(task?.priority)}>
-                                                                {task?.priority}
-                                                            </Badge>
-                                                        </TableData>
-                                                        <TableData>
-                                                            {task?.employee ? `${task.employee.first_name} ${task.employee.last_name}` : 'N/A'}
-                                                        </TableData>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow
-                                                    colspan={4}
-                                                >
-                                                    No recent task found
-                                                </TableRow>
-                                            )}
-                                        </>
-                                    }
-                                />
-                            </div>
-
-                            {/* Mobile Card View */}
-                            <div className="block md:hidden">
-                                {recent_tasks.length > 0 ? (
-                                    recent_tasks.map(task => (
-                                        <RecentTaskCard key={task.id} task={task} />
-                                    ))
-                                ) : (
-                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                        No recent task found
-                                    </div>
-                                )}
-                            </div>
-                        </TableContainer>
-                    </div>
-
-                    <div>
-                        <div className="bg-white p-4 border border-gray-300 rounded-lg shadow-lg">
-                            <div className="px-2 flex items-center">
-                                <div className="text-xl">
-                                    ADD TASK
-                                </div>
-                                <div className="w-full space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex space-x-2">
-                                            <p className="text-sm font-semibold">20/20/2025</p>
-                                            <p className="text-sm font-semibold">Task Added</p>
-                                        </div>
-                                        <div className="flex space-x-4">
-                                            <p className="text-sm">ED</p>
-                                            <p className="text-sm">Not Started</p>
-                                            <p className="text-sm">01/01/2026</p>
-                                            <p className="text-sm">High</p>
-                                        </div>
-                                    </div>
-                                    <div className="">
-                                        <p className="text-2xl">New Task Name Here</p>
-                                    </div>
-                                </div>
-                            </div>
+                    <div className="space-y-4">
+                        <div className="flex items-center space-x-4">
+                            <h1 className="text-3xl">🧐</h1>
+                            <h1 className="text-3xl font-semibold">Recent Tasks</h1>
                         </div>
+                        {recent_tasks.length > 0 ? (
+                            recent_tasks.map(task => (
+                                <div key={task.id} className="bg-white p-4 border border-gray-300 rounded-lg shadow-lg dark:bg-black dark:border-stone-800">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="px-4 py-4 bg-green-200 rounded-md text-green-800">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                            </svg>
+                                        </div>
+                                        <div className="w-full space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex space-x-1">
+                                                    <p className="text-sm font-semibold">Task Created at</p>
+                                                    <p className="text-sm font-semibold">{task.created_at}</p>
+                                                </div>
+                                                <div className="flex space-x-4">
+                                                    <div className="px-4 py-1 rounded" style={{ backgroundColor: task.division?.division_color || '#gray' }}>
+                                                        <p className="text-sm">{task.division?.division_name}</p>
+                                                    </div>
+                                                    <div className={`flex items-center px-4 rounded-full
+                                                            ${task.status === "Completed" && "bg-green-300 dark:bg-green-800"}
+                                                            ${task.status === "In Progress" && "bg-orange-300 dark:bg-orange-600"}
+                                                            ${task.status === "Not Started" && "bg-gray-300 dark:bg-gray-800"}
+                                                        `}>
+                                                        <p className="text-sm">{task.status}</p>
+                                                    </div>
+                                                    <div className="px-4 bg-red-200 text-red-600 font-semibold flex items-center rounded-full">
+                                                        <p className="text-sm">{task.due_date}</p>
+                                                    </div>
+                                                    <div className={`px-4 flex items-center rounded
+                                                            ${task.priority === "Low" && "bg-green-300 dark:bg-green-800"}
+                                                            ${task.priority === "Medium" && "bg-orange-300 dark:bg-orange-600"}
+                                                            ${task.priority === "High" && "bg-red-300 dark:bg-red-700"}
+                                                        `}>
+                                                        <p className="text-sm">{task.priority}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="">
+                                                <p className="text-2xl">{task.name}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="bg-white p-4 border border-gray-300 rounded-lg shadow-lg dark:bg-black dark:border-stone-800">
+                                <div className="flex items-center space-x-4">
+                                    <div className="px-4 py-4 bg-blue-200 rounded-md text-blue-800">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                                        </svg>
+                                    </div>
+                                    <div className="pr-10 w-full flex justify-center">
+                                        <h1 className="text-2xl font-semibold">No new tasks have been created at this time</h1>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
