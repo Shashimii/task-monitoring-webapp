@@ -50,6 +50,8 @@ class TaskResource extends JsonResource
                 'first_name' => $this->employee->first_name,
                 'last_name' => $this->employee->last_name,
             ] : null,
+
+            'created_at' => $this->created_at ? $this->created_at->format('m/d/Y') : null,
         ];
     }
 }
