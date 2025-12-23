@@ -142,7 +142,7 @@ class TaskController extends Controller
             'division' => 'required|string|max:255',
             'last_action' => 'nullable|string|max:255',
             'status' => 'required|string|max:255',
-            'priority' => 'required|string|max:255',
+            'priority' => 'nullable|string|max:255',
             'due_date' => 'nullable|date',
             'description' => 'nullable|string',
         ]);
