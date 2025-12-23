@@ -217,27 +217,37 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                                             {tasks_by_division.length > 0 ? (
                                                 tasks_by_division.map(division => (
                                                     <TableRow key={division.id}>
-                                                        <TableData>
+                                                        <TableData
+                                                            className="text-center"
+                                                        >
                                                             <DivisionContainer bgcolor={division.division_color}>
                                                                 {division.division_name}
                                                             </DivisionContainer>
                                                         </TableData>
-                                                        <TableData>
+                                                        <TableData
+                                                            className="text-center"
+                                                        >
                                                             <span className="text-gray-600 dark:text-gray-400 font-semibold">
                                                                 {division.not_started || 0}
                                                             </span>
                                                         </TableData>
-                                                        <TableData>
+                                                        <TableData
+                                                            className="text-center"
+                                                        >
                                                             <span className="text-orange-600 dark:text-orange-400 font-semibold">
                                                                 {division.in_progress || 0}
                                                             </span>
                                                         </TableData>
-                                                        <TableData>
+                                                        <TableData
+                                                            className="text-center"
+                                                        >
                                                             <span className="text-green-600 dark:text-green-400 font-semibold">
                                                                 {division.completed || 0}
                                                             </span>
                                                         </TableData>
-                                                        <TableData>
+                                                        <TableData
+                                                            className="text-center"
+                                                        >
                                                             <span className="text-blue-600 dark:text-blue-400 font-bold">
                                                                 {division.total_tasks || 0}
                                                             </span>
