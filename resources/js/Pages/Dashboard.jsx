@@ -289,33 +289,37 @@ export default function Dashboard({ task_counts = {}, recent_tasks = [], tasks_b
                                             <div className="flex items-center justify-between">
                                                 <div className="flex space-x-1">
                                                     <p className="text-sm font-semibold">Task Created at</p>
-                                                    <p className="text-sm font-semibold">{task.created_at}</p>
+                                                    <p className="text-sm font-semibold">{task?.created_at}</p>
                                                 </div>
                                                 <div className="flex space-x-4">
                                                     <div className="px-4 py-1 rounded" style={{ backgroundColor: task.division?.division_color || '#gray' }}>
                                                         <p className="text-sm">{task.division?.division_name}</p>
                                                     </div>
                                                     <div className={`flex items-center px-4 rounded-full
-                                                            ${task.status === "Completed" && "bg-green-300 dark:bg-green-800"}
-                                                            ${task.status === "In Progress" && "bg-orange-300 dark:bg-orange-600"}
-                                                            ${task.status === "Not Started" && "bg-gray-300 dark:bg-gray-800"}
+                                                            ${task?.status === "Completed" && "bg-green-300 dark:bg-green-800"}
+                                                            ${task?.status === "In Progress" && "bg-orange-300 dark:bg-orange-600"}
+                                                            ${task?.status === "Not Started" && "bg-gray-300 dark:bg-gray-800"}
                                                         `}>
-                                                        <p className="text-sm">{task.status}</p>
+                                                        <p className="text-sm">{task?.status}</p>
                                                     </div>
-                                                    <div className="px-4 bg-red-200 text-red-600 font-semibold flex items-center rounded-full">
-                                                        <p className="text-sm">{task.due_date}</p>
-                                                    </div>
-                                                    <div className={`px-4 flex items-center rounded
-                                                            ${task.priority === "Low" && "bg-green-300 dark:bg-green-800"}
-                                                            ${task.priority === "Medium" && "bg-orange-300 dark:bg-orange-600"}
-                                                            ${task.priority === "High" && "bg-red-300 dark:bg-red-700"}
+                                                    {task?.due_date && (
+                                                        <div className="px-4 bg-red-200 text-red-600 font-semibold flex items-center rounded-full">
+                                                            <p className="text-sm">{task?.due_date}</p>
+                                                        </div>
+                                                    )}
+                                                    {task?.priority && (
+                                                        <div className={`px-4 flex items-center rounded
+                                                            ${task?.priority === "Low" && "bg-green-300 dark:bg-green-800"}
+                                                            ${task?.priority === "Medium" && "bg-orange-300 dark:bg-orange-600"}
+                                                            ${task?.priority === "High" && "bg-red-300 dark:bg-red-700"}
                                                         `}>
-                                                        <p className="text-sm">{task.priority}</p>
-                                                    </div>
+                                                            <p className="text-sm">{task?.priority}</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="">
-                                                <p className="text-2xl">{task.name}</p>
+                                                <p className="text-2xl">{task?.name}</p>
                                             </div>
                                         </div>
                                     </div>
