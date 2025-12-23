@@ -1,12 +1,14 @@
 export default function PriorityContainer({ children, priority }) {
 
+    if (!children) return null
+
     const priorityColor = (status) => {
         if (status === "Low") {
-            return "bg-green-300";
+            return "bg-cyan-300";
         }
 
         if (status === "Medium") {
-            return "bg-orange-300";
+            return "bg-violet-300";
         }
 
         if (status === "High") {
